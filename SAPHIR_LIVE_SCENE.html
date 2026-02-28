@@ -13,7 +13,6 @@
                 background-position: center;
                 transition: background-image 1s ease-in-out; /* Transition douce entre les fonds */
             }
-            /* On ajoute un voile sombre pour que les animations restent bien visibles par-dessus l'image */
             body::before {
                 content: "";
                 position: absolute;
@@ -1820,20 +1819,57 @@ window.saveTitles = function() {
     });
 };
 
-// MISE À JOUR DE LA FONCTION SWITCH POUR CHARGER LES TITRES EXISTANTS
+            const programmeConcert = {
+    "1": { m1: "Chopin - Nocturne", m2: "Debussy - Clair de Lune", m3: "Satie - Gymnopédie" },
+    "2": { m1: "Liszt - La Campanella", m2: "Rachmaninoff - Prélude", m3: "Improvisation Jazz" },
+    "3": { m1: "Interstellar Theme", m2: "Inception - Time", m3: "Amélie Poulain" },
+    "4": { m1: "Musique Mystère A", m2: "Musique Mystère B", m3: "Musique Mystère C" }
+};
+
 window.switchSession = function(newId) {
     if (currentListenerRef) off(currentListenerRef);
     currentPollId = newId;
 
-    const sessionNumEl = document.getElementById('current-session-number');
-    if (sessionNumEl) {
-        sessionNumEl.innerText = newId;
-    }
-    
-    // Mettre à jour l'affichage de l'admin
-    document.getElementById('session-indicator').innerText = `SESSION ${currentPollId} EN COURS`;
+    // 1. RÉCUPÉRER LES TITRES DEPUIS TON TABLEAU (PROGRAMME)
+    const titresSession = programmeConcert[currentPollId] || { m1: "Choix A", m2: "Choix B", m3: "Choix C" };
 
-    // 4. Synchroniser les téléphones du public
+    // 2. ENVOYER CES TITRES À FIREBASE (Pour que le public les voit)
+    set(ref(db, `config/session_${currentPollId}/titles`), titresSession);
+
+    // 3. MISE À JOUR VISUELLE DE TON ÉCRAN DE SCÈNE
+    document.getElementById('current-session-number').innerText = currentPollId;
+    
+    // Mettre à jour les labels des barres sur ton écran géant
+    if(document.getElementById('label-m1')) document.getElementById('label-m1').innerText = titresSession.m1;
+    if(document.getElementById('label-m2')) document.getElementById('label-m2').innerText = titresSession.m2;
+    if(document.getElementById('label-m3')) document.getElementById('label-m3').innerText = titresSession.m3;
+
+    // 4. RÉINITIALISER LES BARRES À 0%
+    ['m1', 'm2', 'm3'].forEach(id => {
+        const bar = document.getElementById('bar-' + id);
+        const txt = document.getElementById('txt-' + id);
+        if(bar) bar.style.height = '0%';
+        if(txt) txt.innerText = '0%';
+    });
+
+    // 5. ÉCOUTER LES VOTES EN TEMPS RÉEL
+    const pollPath = `votes/session_${currentPollId}`;
+    currentListenerRef = ref(db, pollPath);
+    onValue(currentListenerRef, (snap) => {
+        const data = snap.val() || { m1: 0, m2: 0, m3: 0 };
+        const total = (data.m1 || 0) + (data.m2 || 0) + (data.m3 || 0);
+
+        ['m1', 'm2', 'm3'].forEach(id => {
+            const count = data[id] || 0;
+            const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+            const bar = document.getElementById('bar-' + id);
+            const txt = document.getElementById('txt-' + id);
+            if(bar) bar.style.height = percentage + '%';
+            if(txt) txt.innerText = percentage + '%';
+        });
+    });
+
+    // 6. SYNCHRONISER L'ID DE SESSION POUR LE PUBLIC
     set(ref(db, 'config/current_active_id'), currentPollId);
 };
 
