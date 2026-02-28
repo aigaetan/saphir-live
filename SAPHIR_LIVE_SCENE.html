@@ -1750,6 +1750,75 @@
                 }
             }
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue, off, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDXOd8Sb_TsiYqwbebCnXTdZGimeheesR4",
+  authDomain: "saphir-live.firebaseapp.com",
+  projectId: "saphir-live",
+  storageBucket: "saphir-live.firebasestorage.app",
+  messagingSenderId: "719917557935",
+  appId: "1:719917557935:web:3a7a4e1a846732c1afcc5a",
+  measurementId: "G-VQQ9H234NB"
+};
+            
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let currentPollId = 1;
+let currentListenerRef = null;
+
+function switchSession(newId) {
+    // 1. Nettoyage de l'ancien écouteur si il existe
+    if (currentListenerRef) {
+        off(currentListenerRef);
+    }
+
+    currentPollId = newId;
+
+    // 2. Mise à jour visuelle du titre de session
+    document.getElementById('session-title').innerText = `SESSION DE VOTE #${currentPollId}`;
+    
+    // Remise à zéro visuelle immédiate des barres avant les nouveaux votes
+    ['m1', 'm2', 'm3'].forEach(id => {
+        document.getElementById('bar-' + id).style.height = '0%';
+        document.getElementById('txt-' + id).innerText = '0%';
+    });
+
+    // 3. Nouvelle écoute Firebase pour la session active
+    const pollPath = `votes/session_${currentPollId}`;
+    currentListenerRef = ref(db, pollPath);
+
+    onValue(currentListenerRef, (snap) => {
+        const data = snap.val() || { m1: 0, m2: 0, m3: 0 };
+        const total = (data.m1 || 0) + (data.m2 || 0) + (data.m3 || 0);
+
+        ['m1', 'm2', 'm3'].forEach(id => {
+            const count = data[id] || 0;
+            const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+            document.getElementById('bar-' + id).style.height = percentage + '%';
+            document.getElementById('txt-' + id).innerText = percentage + '%';
+        });
+    });
+
+    // 4. On prévient Firebase que tout le public doit basculer sur cet ID
+    set(ref(db, 'config/current_active_id'), currentPollId);
+}
+
+// Détection de la touche F1
+window.addEventListener('keydown', (event) => {
+    if (event.key === "F1") {
+        event.preventDefault();
+        let nextId = currentPollId + 1;
+        if (nextId > 3) nextId = 1; // On boucle sur 3 sessions
+        switchSession(nextId);
+    }
+});
+
+// Lancement de la session 1 au démarrage
+switchSession(1);
+            
         </script>
     </body>
 </html>
