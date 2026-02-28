@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SAPHIR | Vote Live</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+
+        :root { --neon: #00e5ff; --bg: #050505; }
+
+        body { background: var(--bg); color: white; font-family: 'Montserrat', sans-serif; text-align: center; padding: 20px; }
+
+        h1 { font-family: 'Cinzel', serif; color: var(--neon); text-shadow: 0 0 15px var(--neon); margin-bottom: 5px; }
+
+        .subtitle { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+
+        .choice-card {
+
+            background: #111; border: 1px solid #333; padding: 20px; margin: 10px auto;
+
+            max-width: 400px; border-radius: 12px; cursor: pointer; position: relative;
+
+            transition: 0.3s; overflow: hidden;
+
+        }
+
+        .choice-card:active { transform: scale(0.98); }
+
+        .choice-card.voted { border-color: var(--neon); background: rgba(0, 229, 255, 0.05); }
+
+        .choice-card.disabled { opacity: 0.5; pointer-events: none; }
+
+        .votes-count { font-size: 1.2rem; font-weight: bold; color: var(--neon); margin-top: 5px; }
+
+        .progress-bg { position: absolute; bottom: 0; left: 0; height: 100%; background: rgba(0, 229, 255, 0.1); width: 0%; transition: width 0.8s ease; z-index: 0; }
+
+        .content { position: relative; z-index: 1; }
+
+    </style>
+
+</head>
+
+<body>
+
+    <h1>SAPHIR LIVE</h1>
+
+    <p class="subtitle">Touchez votre choix pour voter</p>
+
+    <div id="choices">
+
+        <div class="choice-card" onclick="vote('m1')">
+
+            <div id="bar-m1" class="progress-bg"></div>
+
+            <div class="content"><h3>Chopin - Étude "Hiver"</h3><div id="val-m1" class="votes-count">0</div></div>
+
+        </div>
+
+        <div class="choice-card" onclick="vote('m2')">
+
+            <div id="bar-m2" class="progress-bg"></div>
+
+            <div class="content"><h3>Debussy - Clair de Lune</h3><div id="val-m2" class="votes-count">0</div></div>
+
+        </div>
+
+        <div class="choice-card" onclick="vote('m3')">
+
+            <div id="bar-m3" class="progress-bg"></div>
+
+            <div class="content"><h3>Saphir - Improvisation Néon</h3><div id="val-m3" class="votes-count">0</div></div>
+
+        </div>
+
+    </div>
+
+    <script type="module">
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+    import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyDXOd8Sb_TsiYqwbebCnXTdZGimeheesR4",
+  authDomain: "saphir-live.firebaseapp.com",
+  projectId: "saphir-live",
+  storageBucket: "saphir-live.firebasestorage.app",
+  messagingSenderId: "719917557935",
+  appId: "1:719917557935:web:3a7a4e1a846732c1afcc5a",
+  measurementId: "G-VQQ9H234NB"
+};
+
+    const app = initializeApp(firebaseConfig);
+
+    const db = getDatabase(app);
+
+    // ÉTAPE 1 : Vérifier si l'utilisateur a déjà voté (via LocalStorage)
+
+    let hasVoted = localStorage.getItem('saphir_voted');
+
+    // ÉTAPE 2 : Si déjà voté au chargement, on grise tout de suite
+
+    if (hasVoted) {
+
+        document.addEventListener("DOMContentLoaded", () => {
+
+            document.querySelectorAll('.choice-card').forEach(c => c.classList.add('disabled'));
+
+        });
+
+    }
+
+    onValue(ref(db, 'votes/'), (snap) => {
+
+        const d = snap.val() || { m1:0, m2:0, m3:0 };
+
+        const total = (d.m1 || 0) + (d.m2 || 0) + (d.m3 || 0);
+
+        ['m1','m2','m3'].forEach(id => {
+
+            const v = d[id] || 0;
+
+            document.getElementById('val-'+id).innerText = v;
+
+            document.getElementById('bar-'+id).style.width = (total > 0 ? (v/total)*100 : 0) + '%';
+
+        });
+
+    });
+
+    window.vote = (id) => {
+
+        // Bloquage de sécurité
+
+        if (hasVoted || localStorage.getItem('saphir_voted')) {
+
+            alert("Votre voix a déjà été comptabilisée pour ce morceau.");
+
+            return;
+
+        }
+
+        // ÉTAPE 3 : Enregistrement du vote avec transaction Firebase
+
+        runTransaction(ref(db, 'votes/'+id), (currentValue) => {
+
+            return (currentValue || 0) + 1;
+
+        }).then(() => {
+
+            // ÉTAPE 4 : Verrouillage définitif sur cet appareil
+
+            hasVoted = true;
+
+            localStorage.setItem('saphir_voted', 'true');
+
+            
+
+            // Feedback visuel immédiat
+
+            document.querySelectorAll('.choice-card').forEach(c => {
+
+                c.classList.add('disabled');
+
+                if(c.getAttribute('onclick').includes(id)) {
+
+                    c.style.borderColor = "var(--neon)";
+
+                    c.innerHTML += '<div style="color:var(--neon); font-size:0.8rem; margin-top:5px;">✓ VOTÉ</div>';
+
+                }
+
+            });
+
+        }).catch((err) => {
+
+            console.error("Erreur de vote:", err);
+
+        });
+
+    };
+
+</script>
+
+</body>
+
+</html>
