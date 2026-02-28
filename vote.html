@@ -145,6 +145,26 @@
             document.querySelectorAll('.choice-card').forEach(c => c.classList.add('disabled'));
         }
     });
+
+        // --- SCRIPT À METTRE DANS VOTE.HTML ---
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+// 1. Écouter quelle session SAPHIR a activée
+const activeSessionRef = ref(db, 'config/current_active_id');
+
+onValue(activeSessionRef, (snapshot) => {
+    const sessionActiveId = snapshot.val() || 1; // Session 1 par défaut
+    
+    // On regarde quelle session est actuellement affichée sur le téléphone
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionAffichee = urlParams.get('id') || "1";
+
+    // SI LA SESSION ACTIVE SUR FIREBASE EST DIFFÉRENTE DE CELLE DU TÉLÉPHONE
+    if (sessionAffichee !== sessionActiveId.toString()) {
+        // Redirection automatique vers la nouvelle session
+        window.location.href = `vote.html?id=${sessionActiveId}`;
+    }
+});
 </script>
 
 </body>
