@@ -82,7 +82,6 @@
         return id;
     }
     const myID = getDeviceID();
-    let currentPollId = "1";
 
     // 2. ÉCOUTER LE CHANGEMENT DE SESSION (F1)
     onValue(ref(db, 'config/current_active_id'), (snapshot) => {
