@@ -71,25 +71,26 @@
         const db = getDatabase(app);
 
         let currentPollId = "1";
-        let hasVoted = false;
 
-        // 1. ÉCOUTER LA SESSION ACTIVE (Pilotage par Saphir via F1)
-        onValue(ref(db, 'config/current_active_id'), (snapshot) => {
-            const activeId = snapshot.val() || "1";
-            
-            // Si Saphir change de session sur l'écran, on réinitialise le vote ici
-            if (currentPollId !== activeId.toString()) {
-                currentPollId = activeId.toString();
-                hasVoted = false; // Permettre de revoter pour la nouvelle session
-                document.querySelectorAll('.choice-card').forEach(el => el.classList.remove('selected'));
-                document.getElementById('status-msg').classList.remove('visible');
-            }
+    // --- 1. GÉNÉRER OU RÉCUPÉRER L'ID UNIQUE DE L'APPAREIL ---
+    function getDeviceID() {
+        let id = localStorage.getItem('saphir_device_id');
+        if (!id) {
+            id = 'ID-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            localStorage.setItem('saphir_device_id', id);
+        }
+        return id;
+    }
+    const myDeviceID = getDeviceID();
 
-            // Charger les titres correspondants à cette session
-            loadTitles(currentPollId);
-        });
+    // --- 2. ÉCOUTER LA SESSION ACTIVE ---
+    onValue(ref(db, 'config/current_active_id'), (snapshot) => {
+        currentPollId = (snapshot.val() || "1").toString();
+        checkIfVotedOnFirebase();
+        loadTitles(currentPollId);
+    });
 
-        // 2. CHARGER LES TITRES DYNAMIQUEMENT
+       // 2. CHARGER LES TITRES DYNAMIQUEMENT
         function loadTitles(id) {
             onValue(ref(db, `config/session_${id}/titles`), (snap) => {
                 const titles = snap.val() || { m1: "Choix 1", m2: "Choix 2", m3: "Choix 3" };
@@ -99,22 +100,48 @@
             });
         }
 
-        // 3. ENVOYER LE VOTE (Transaction sécurisée)
-        window.submitVote = function(choiceId) {
-            if (hasVoted) return;
 
-            const voteRef = ref(db, `votes/session_${currentPollId}/${choiceId}`);
-            
-            runTransaction(voteRef, (currentValue) => {
-                return (currentValue || 0) + 1;
-            }).then(() => {
-                hasVoted = true;
-                document.getElementById('btn-' + choiceId).classList.add('selected');
-                document.getElementById('status-msg').classList.add('visible');
-            }).catch((err) => {
-                console.error("Erreur de vote:", err);
+    // --- 3. VÉRIFIER SI CET ID A DÉJÀ VOTÉ DANS FIREBASE ---
+    async function checkIfVotedOnFirebase() {
+        const voteSnapshot = await get(ref(db, `check_votes/session_${currentPollId}/${myDeviceID}`));
+        
+        const cards = document.querySelectorAll('.choice-card');
+        const statusMsg = document.getElementById('status-msg');
+
+        if (voteSnapshot.exists()) {
+            const chosenM = voteSnapshot.val();
+            // Bloquer l'interface
+            cards.forEach(card => card.style.pointerEvents = 'none');
+            document.getElementById('btn-' + chosenM).classList.add('selected');
+            statusMsg.innerText = "VOTE DÉJÀ ENREGISTRÉ POUR CE MORCEAU";
+            statusMsg.classList.add('visible');
+        } else {
+            // Libérer l'interface
+            cards.forEach(card => {
+                card.style.pointerEvents = 'auto';
+                card.classList.remove('selected');
             });
-        };
+            statusMsg.classList.remove('visible');
+        }
+    }
+
+    // --- 4. ENVOYER LE VOTE SÉCURISÉ ---
+    window.submitVote = async function(choiceId) {
+        // Sécurité ultime : on vérifie une dernière fois avant d'envoyer
+        const voteSnapshot = await get(ref(db, `check_votes/session_${currentPollId}/${myDeviceID}`));
+        if (voteSnapshot.exists()) return;
+
+        // A. On marque l'ID comme "ayant voté" dans une table de contrôle
+        set(ref(db, `check_votes/session_${currentPollId}/${myDeviceID}`), choiceId);
+
+        // B. On incrémente le compteur public pour tes barres sur scène
+        const countRef = ref(db, `votes/session_${currentPollId}/${choiceId}`);
+        runTransaction(countRef, (current) => (current || 0) + 1);
+
+        // C. On rafraîchit l'interface
+        checkIfVotedOnFirebase();
+    };
+        
     </script>
 </body>
 </html>
