@@ -1827,7 +1827,6 @@ window.switchSession = function(newId) {
 
     // Mettre à jour l'affichage de l'admin
     document.getElementById('session-indicator').innerText = `SESSION ${currentPollId} EN COURS`;
-    document.getElementById('session-title').innerText = `SESSION ${currentPollId} DE VOTE`;
 
     // 1. Charger les titres déjà enregistrés dans Firebase pour cette session
     onValue(ref(db, `config/session_${currentPollId}/titles`), (snap) => {
