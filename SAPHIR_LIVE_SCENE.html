@@ -327,9 +327,11 @@
     </head>
     <body>
 
-        <div id="session-indicator">
+        <div id="votes-container" style="display:none;">
+          <div id="session-indicator">
             <span class="dot"></span> VOTEZ SESSION <span id="current-session-number">1</span> EN COURS
             <br /><img src="barcode.gif" alt="VOTEZ" class="qrcode" />
+          </div>
         </div>
 
         <div id="mode-indicator"></div>
@@ -389,6 +391,12 @@
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 5px;">
                                 <input type="checkbox" id="check-webcam" onchange="toggleStreamElement('webcam-container', this.checked)"> 
                                 Webcam
+                            </label>
+                        </td>
+                        <td>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 5px;">
+                                <input type="checkbox" id="check-votes" onchange="toggleStreamElement('votes-container', this.checked)"> 
+                                Votes
                             </label>
                         </td>
                     </tr>
