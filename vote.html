@@ -1,91 +1,62 @@
-<!DOCTYPE html>
-
+   <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>SAPHIR | Vote Live</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
-
+    <title>SAPHIR LIVE | Votez pour le morceau</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@300;500&display=swap" rel="stylesheet">
     <style>
-
         :root { --neon: #00e5ff; --bg: #050505; }
-
-        body { background: var(--bg); color: white; font-family: 'Montserrat', sans-serif; text-align: center; padding: 20px; }
-
-        h1 { font-family: 'Cinzel', serif; color: var(--neon); text-shadow: 0 0 15px var(--neon); margin-bottom: 5px; }
-
-        .subtitle { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
-
-        .choice-card {
-
-            background: #111; border: 1px solid #333; padding: 20px; margin: 10px auto;
-
-            max-width: 400px; border-radius: 12px; cursor: pointer; position: relative;
-
-            transition: 0.3s; overflow: hidden;
-
+        body { 
+            background: var(--bg); color: white; font-family: 'Montserrat', sans-serif; 
+            margin: 0; padding: 20px; text-align: center; overflow-x: hidden;
         }
+        h1 { font-family: 'Cinzel', serif; color: var(--neon); letter-spacing: 5px; margin-bottom: 5px; }
+        p { opacity: 0.7; font-size: 0.9rem; margin-bottom: 30px; }
 
-        .choice-card:active { transform: scale(0.98); }
+        .vote-container { display: flex; flex-direction: column; gap: 20px; max-width: 400px; margin: 0 auto; }
+        
+        .choice-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .choice-card:active { transform: scale(0.95); background: rgba(0, 229, 255, 0.1); }
+        .choice-card.selected { border-color: var(--neon); box-shadow: 0 0 20px var(--neon); background: rgba(0, 229, 255, 0.05); }
 
-        .choice-card.voted { border-color: var(--neon); background: rgba(0, 229, 255, 0.05); }
-
-        .choice-card.disabled { opacity: 0.5; pointer-events: none; }
-
-        .votes-count { font-size: 1.2rem; font-weight: bold; color: var(--neon); margin-top: 5px; }
-
-        .progress-bg { position: absolute; bottom: 0; left: 0; height: 100%; background: rgba(0, 229, 255, 0.1); width: 0%; transition: width 0.8s ease; z-index: 0; }
-
-        .content { position: relative; z-index: 1; }
-
+        h3 { margin: 0; font-size: 1.2rem; letter-spacing: 2px; text-transform: uppercase; }
+        
+        #status-msg { margin-top: 30px; font-size: 0.8rem; color: var(--neon); opacity: 0; transition: 0.5s; }
+        .visible { opacity: 1 !important; }
     </style>
-
 </head>
-
 <body>
 
-    <h1>SAPHIR LIVE</h1>
+    <h1>SAPHIR</h1>
+    <p>Choisissez la suite du concert</p>
 
-    <p class="subtitle">Touchez votre choix pour voter</p>
-
-    <div id="choices">
-
-        <div class="choice-card" onclick="vote('m1')">
-
-            <div id="bar-m1" class="progress-bg"></div>
-
-            <div class="content"><h3>Chopin - Étude "Hiver"</h3><div id="val-m1" class="votes-count">0</div></div>
-
+    <div class="vote-container">
+        <div class="choice-card" id="btn-m1" onclick="submitVote('m1')">
+            <h3 id="label-m1">Chargement...</h3>
         </div>
-
-        <div class="choice-card" onclick="vote('m2')">
-
-            <div id="bar-m2" class="progress-bg"></div>
-
-            <div class="content"><h3>Debussy - Clair de Lune</h3><div id="val-m2" class="votes-count">0</div></div>
-
+        <div class="choice-card" id="btn-m2" onclick="submitVote('m2')">
+            <h3 id="label-m2">Chargement...</h3>
         </div>
-
-        <div class="choice-card" onclick="vote('m3')">
-
-            <div id="bar-m3" class="progress-bg"></div>
-
-            <div class="content"><h3>Saphir - Improvisation Néon</h3><div id="val-m3" class="votes-count">0</div></div>
-
+        <div class="choice-card" id="btn-m3" onclick="submitVote('m3')">
+            <h3 id="label-m3">Chargement...</h3>
         </div>
-
     </div>
 
-    <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    <div id="status-msg">VOTE ENREGISTRÉ !</div>
 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        
     const firebaseConfig = {
   apiKey: "AIzaSyDXOd8Sb_TsiYqwbebCnXTdZGimeheesR4",
   authDomain: "saphir-live.firebaseapp.com",
@@ -95,78 +66,57 @@
   appId: "1:719917557935:web:3a7a4e1a846732c1afcc5a",
   measurementId: "G-VQQ9H234NB"
 };
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
 
-    // 1. RÉCUPÉRER L'ID DEPUIS L'URL (ex: vote.html?id=2)
-    const urlParams = new URLSearchParams(window.location.search);
-    const pollId = urlParams.get('id') || "1"; // Par défaut 1 si rien n'est précisé
-    
-    // On définit le chemin dans Firebase en fonction de cet ID
-    const pollPath = `votes/session_${pollId}`;
-    const localStorageKey = `saphir_voted_session_${pollId}`;
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-    // 2. ÉCOUTER LES RÉSULTATS DE CETTE SESSION PRÉCISE
-    onValue(ref(db, pollPath), (snap) => {
-        const d = snap.val() || { m1: 0, m2: 0, m3: 0 };
-        const total = (d.m1 || 0) + (d.m2 || 0) + (d.m3 || 0);
-        
-        ['m1', 'm2', 'm3'].forEach(id => {
-            const v = d[id] || 0;
-            const percent = total > 0 ? (v / total) * 100 : 0;
+        let currentPollId = "1";
+        let hasVoted = false;
+
+        // 1. ÉCOUTER LA SESSION ACTIVE (Pilotage par Saphir via F1)
+        onValue(ref(db, 'config/current_active_id'), (snapshot) => {
+            const activeId = snapshot.val() || "1";
             
-            if(document.getElementById('val-'+id)) {
-                document.getElementById('val-'+id).innerText = v;
-                document.getElementById('bar-'+id).style.width = percent + '%';
+            // Si Saphir change de session sur l'écran, on réinitialise le vote ici
+            if (currentPollId !== activeId.toString()) {
+                currentPollId = activeId.toString();
+                hasVoted = false; // Permettre de revoter pour la nouvelle session
+                document.querySelectorAll('.choice-card').forEach(el => el.classList.remove('selected'));
+                document.getElementById('status-msg').classList.remove('visible');
             }
-        });
-    });
 
-    // 3. FONCTION DE VOTE
-    window.vote = (choiceId) => {
-        if (localStorage.getItem(localStorageKey)) {
-            alert("Vous avez déjà voté pour cette session !");
-            return;
+            // Charger les titres correspondants à cette session
+            loadTitles(currentPollId);
+        });
+
+        // 2. CHARGER LES TITRES DYNAMIQUEMENT
+        function loadTitles(id) {
+            onValue(ref(db, `config/session_${id}/titles`), (snap) => {
+                const titles = snap.val() || { m1: "Choix 1", m2: "Choix 2", m3: "Choix 3" };
+                document.getElementById('label-m1').innerText = titles.m1;
+                document.getElementById('label-m2').innerText = titles.m2;
+                document.getElementById('label-m3').innerText = titles.m3;
+            });
         }
 
-        // Voter dans la session spécifique (session_1, session_2...)
-        runTransaction(ref(db, `${pollPath}/${choiceId}`), (v) => {
-            return (v || 0) + 1;
-        }).then(() => {
-            localStorage.setItem(localStorageKey, 'true');
-            document.querySelectorAll('.choice-card').forEach(c => c.classList.add('disabled'));
-            alert("Merci ! Votre vote est enregistré.");
-        });
-    };
+        // 3. ENVOYER LE VOTE (Transaction sécurisée)
+        window.submitVote = function(choiceId) {
+            if (hasVoted) return;
 
-    // Au chargement, vérifier si déjà voté pour ce QR code précis
-    document.addEventListener("DOMContentLoaded", () => {
-        if (localStorage.getItem(localStorageKey)) {
-            document.querySelectorAll('.choice-card').forEach(c => c.classList.add('disabled'));
-        }
-    });
-
-        // --- SCRIPT À METTRE DANS VOTE.HTML ---
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
-// 1. Écouter quelle session SAPHIR a activée
-const activeSessionRef = ref(db, 'config/current_active_id');
-
-onValue(activeSessionRef, (snapshot) => {
-    const sessionActiveId = snapshot.val() || 1; // Session 1 par défaut
-    
-    // On regarde quelle session est actuellement affichée sur le téléphone
-    const urlParams = new URLSearchParams(window.location.search);
-    const sessionAffichee = urlParams.get('id') || "1";
-
-    // SI LA SESSION ACTIVE SUR FIREBASE EST DIFFÉRENTE DE CELLE DU TÉLÉPHONE
-    if (sessionAffichee !== sessionActiveId.toString()) {
-        // Redirection automatique vers la nouvelle session
-        window.location.href = `vote.html?id=${sessionActiveId}`;
-    }
-});
-</script>
-
+            const voteRef = ref(db, `votes/session_${currentPollId}/${choiceId}`);
+            
+            runTransaction(voteRef, (currentValue) => {
+                return (currentValue || 0) + 1;
+            }).then(() => {
+                hasVoted = true;
+                document.getElementById('btn-' + choiceId).classList.add('selected');
+                document.getElementById('status-msg').classList.add('visible');
+            }).catch((err) => {
+                console.error("Erreur de vote:", err);
+            });
+        };
+    </script>
 </body>
+</html>
 
 </html>
