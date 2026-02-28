@@ -1710,9 +1710,26 @@
                 document.body.appendChild(report);
             }
 
+            function showVotesReport() {
+                const votes = document.getElementById('votes-report');
+                votes.style = `
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.95); border: 2px solid #00d2ff; border-radius: 15px;
+        padding: 30px; color: white; text-align: center; font-family: 'Segoe UI', sans-serif;
+        box-shadow: 0 0 50px rgba(0, 210, 255, 0.5); z-index: 2000; min-width: 300px;
+    `;
+            }
+
 // --- LOGIQUE F15 : PASSAGE AU MORCEAU SUIVANT ---
             window.addEventListener('keyup', (e) => {
+                if (e.key === 'F1') {
+                  showVotesReport();
+                }
                 if (e.key === 'F2') {
+                  currentPollId = currentPollId++;
+                  window.switchSession(currentPollId);
+                }
+                if (e.key === 'F3') {
                     showPerformanceReport();
                 }
                 if (e.key === 'F15') {
@@ -1871,16 +1888,6 @@ window.switchSession = function(newId) {
     // 6. SYNCHRONISER L'ID DE SESSION POUR LE PUBLIC
     set(ref(db, 'config/current_active_id'), currentPollId);
 };
-
-    // 3. GESTION DU CLAVIER (F1)
-    window.addEventListener('keydown', (event) => {
-        if (event.key === "F1") {
-            event.preventDefault();
-            let nextId = currentPollId + 1;
-            if (nextId > 3) nextId = 1; 
-            window.switchSession(nextId);
-        }
-    });
 
     // 4. LANCEMENT INITIAL
     window.switchSession(1);
