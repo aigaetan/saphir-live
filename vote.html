@@ -83,9 +83,7 @@
     </div>
 
     <script type="module">
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
     import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
@@ -97,97 +95,56 @@
   appId: "1:719917557935:web:3a7a4e1a846732c1afcc5a",
   measurementId: "G-VQQ9H234NB"
 };
-
     const app = initializeApp(firebaseConfig);
-
     const db = getDatabase(app);
 
-    // ÉTAPE 1 : Vérifier si l'utilisateur a déjà voté (via LocalStorage)
+    // 1. RÉCUPÉRER L'ID DEPUIS L'URL (ex: vote.html?id=2)
+    const urlParams = new URLSearchParams(window.location.search);
+    const pollId = urlParams.get('id') || "1"; // Par défaut 1 si rien n'est précisé
+    
+    // On définit le chemin dans Firebase en fonction de cet ID
+    const pollPath = `votes/session_${pollId}`;
+    const localStorageKey = `saphir_voted_session_${pollId}`;
 
-    let hasVoted = localStorage.getItem('saphir_voted');
-
-    // ÉTAPE 2 : Si déjà voté au chargement, on grise tout de suite
-
-    if (hasVoted) {
-
-        document.addEventListener("DOMContentLoaded", () => {
-
-            document.querySelectorAll('.choice-card').forEach(c => c.classList.add('disabled'));
-
-        });
-
-    }
-
-    onValue(ref(db, 'votes/'), (snap) => {
-
-        const d = snap.val() || { m1:0, m2:0, m3:0 };
-
+    // 2. ÉCOUTER LES RÉSULTATS DE CETTE SESSION PRÉCISE
+    onValue(ref(db, pollPath), (snap) => {
+        const d = snap.val() || { m1: 0, m2: 0, m3: 0 };
         const total = (d.m1 || 0) + (d.m2 || 0) + (d.m3 || 0);
-
-        ['m1','m2','m3'].forEach(id => {
-
+        
+        ['m1', 'm2', 'm3'].forEach(id => {
             const v = d[id] || 0;
-
-            document.getElementById('val-'+id).innerText = v;
-
-            document.getElementById('bar-'+id).style.width = (total > 0 ? (v/total)*100 : 0) + '%';
-
+            const percent = total > 0 ? (v / total) * 100 : 0;
+            
+            if(document.getElementById('val-'+id)) {
+                document.getElementById('val-'+id).innerText = v;
+                document.getElementById('bar-'+id).style.width = percent + '%';
+            }
         });
-
     });
 
-    window.vote = (id) => {
-
-        // Bloquage de sécurité
-
-        if (hasVoted || localStorage.getItem('saphir_voted')) {
-
-            alert("Votre voix a déjà été comptabilisée pour ce morceau.");
-
+    // 3. FONCTION DE VOTE
+    window.vote = (choiceId) => {
+        if (localStorage.getItem(localStorageKey)) {
+            alert("Vous avez déjà voté pour cette session !");
             return;
-
         }
 
-        // ÉTAPE 3 : Enregistrement du vote avec transaction Firebase
-
-        runTransaction(ref(db, 'votes/'+id), (currentValue) => {
-
-            return (currentValue || 0) + 1;
-
+        // Voter dans la session spécifique (session_1, session_2...)
+        runTransaction(ref(db, `${pollPath}/${choiceId}`), (v) => {
+            return (v || 0) + 1;
         }).then(() => {
-
-            // ÉTAPE 4 : Verrouillage définitif sur cet appareil
-
-            hasVoted = true;
-
-            localStorage.setItem('saphir_voted', 'true');
-
-            
-
-            // Feedback visuel immédiat
-
-            document.querySelectorAll('.choice-card').forEach(c => {
-
-                c.classList.add('disabled');
-
-                if(c.getAttribute('onclick').includes(id)) {
-
-                    c.style.borderColor = "var(--neon)";
-
-                    c.innerHTML += '<div style="color:var(--neon); font-size:0.8rem; margin-top:5px;">✓ VOTÉ</div>';
-
-                }
-
-            });
-
-        }).catch((err) => {
-
-            console.error("Erreur de vote:", err);
-
+            localStorage.setItem(localStorageKey, 'true');
+            document.querySelectorAll('.choice-card').forEach(c => c.classList.add('disabled'));
+            alert("Merci ! Votre vote est enregistré.");
         });
-
     };
 
+    // Au chargement, vérifier si déjà voté pour ce QR code précis
+    document.addEventListener("DOMContentLoaded", () => {
+        if (localStorage.getItem(localStorageKey)) {
+            document.querySelectorAll('.choice-card').forEach(c => c.classList.add('disabled'));
+        }
+    });
 </script>
 
 </body>
