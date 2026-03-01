@@ -336,13 +336,17 @@
     border: none;
     border-radius: 4px;
 }
+            #voter-count-number {
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: inline-block;
+}
         </style>
     </head>
     <body>
 
         <div id="votes-container" style="display:none;">
           <div id="session-indicator">
-            <span class="dot"></span> VOTEZ SESSION <span id="current-session-number">1</span> EN COURS
+            <span class="dot"></span> VOTEZ SESSION <span id="current-session-number">1</span> EN COURS (<span id="voter-count-number" style="font-size: 48px; font-weight: 900; color: var(--neon); text-shadow: 0 0 20px var(--neon); line-height: 1;">0</span>)
             <br /><img src="barcode.gif" alt="VOTEZ" class="qrcode" />
           </div>
         </div>
@@ -1948,6 +1952,30 @@
                 votes.style = `display:none;`;
             }
 
+            let currentCountListener = null;
+
+window.updatePublicCounter = function(sessionId) {
+    const db = getDatabase();
+    const countRef = ref(db, `check_votes/session_${sessionId}`);
+    const countNumberEl = document.getElementById('voter-count-number');
+
+    // On coupe l'ancien écouteur s'il existe pour ne pas surcharger
+    if (currentCountListener) off(ref(db, `check_votes/session_${lastSessionId}`));
+
+    onValue(countRef, (snapshot) => {
+        const data = snapshot.val();
+        const total = data ? Object.keys(data).length : 0;
+        
+        // Animation de changement
+        countNumberEl.style.transform = "scale(1.3)";
+        countNumberEl.innerText = total;
+        
+        setTimeout(() => {
+            countNumberEl.style.transform = "scale(1)";
+        }, 150);
+    });
+};
+
             window.switchSession = function (newId) {
                 if (currentListenerRef)
                     off(currentListenerRef);
@@ -2001,6 +2029,9 @@
 
                 // 6. SYNCHRONISER L'ID DE SESSION POUR LE PUBLIC
                 set(ref(db, 'config/current_active_id'), currentPollId);
+
+                // 7. MAJ NOMBRE VOTANTS
+                window.updatePublicCounter(currentPollId);
             };
 
             // FONCTION POUR VIDER LES VOTES DE LA SESSION EN COURS
