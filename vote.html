@@ -116,7 +116,41 @@
         }
         return id;
     }
-    const myID = getDeviceID();
+
+//const myID = getDeviceID();
+
+       
+// GÉNÉRATION D'UNE EMPREINTE UNIQUE (Même en navigation privée)
+function getFingerprint() {
+    try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        // On dessine un truc complexe que seul ce GPU rendra de cette façon
+        ctx.textBaseline = "top";
+        ctx.font = "16px 'Arial'";
+        ctx.fillStyle = "#f60";
+        ctx.fillRect(100, 5, 50, 20);
+        ctx.fillStyle = "#069";
+        ctx.fillText("Saphir-Live-v1", 2, 15);
+        ctx.fillStyle = "rgba(102, 204, 0, 0.5)";
+        ctx.fillText("Saphir-Live-v1", 4, 17);
+        
+        const b64 = canvas.toDataURL();
+        // Transformation de l'image en petit code numérique (Hash)
+        let hash = 0;
+        for (let i = 0; i < b64.length; i++) {
+            hash = ((hash << 5) - hash) + b64.charCodeAt(i);
+            hash |= 0;
+        }
+        return "fp_" + Math.abs(hash);
+    } catch (e) {
+        // Backup au cas où le canvas est bloqué
+        return "u_" + Math.random().toString(36).substr(2, 9);
+    }
+}
+       
+// On génère l'ID une seule fois au chargement
+const myID = getFingerprint();
 
     // 2. ÉCOUTER LE CHANGEMENT DE SESSION (F1)
     onValue(ref(db, 'config/current_active_id'), (snapshot) => {
@@ -184,8 +218,15 @@ function hexToRgb(hex) {
     // 4. ACTION DE VOTER
     window.submitVote = async function(choiceId) {
         // Sécurité serveur : on vérifie si l'ID existe avant d'incrémenter
-        const check = await get(ref(db, `check_votes/session_${currentPollId}/${myID}`));
-        if (check.exists()) return;
+        //const check = await get(ref(db, `check_votes/session_${currentPollId}/${myID}`));
+        //if (check.exists()) return;
+       const checkRef = ref(db, `check_votes/session_${currentPollId}/${myID}`);
+       const snapshot = await get(checkRef);
+
+    if (snapshot.exists()) {
+        alert("Saphir a bien reçu ton vote ! Un seul vote par session.");
+        return;
+    }
 
         // Étape A : Enregistrer l'ID de l'utilisateur pour cette session
         await set(ref(db, `check_votes/session_${currentPollId}/${myID}`), choiceId);
