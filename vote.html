@@ -10,6 +10,8 @@
         body { 
             background: var(--bg); color: white; font-family: 'Montserrat', sans-serif; 
             margin: 0; padding: 20px; text-align: center; overflow-x: hidden;
+           transition: background-color 0.8s ease; /* Transition douce pour un effet immersif */
+           background-color: var(--bg);
         }
 
        #session-badge {
@@ -122,6 +124,32 @@
         verifierStatutVote(); // On vérifie IMMÉDIATEMENT si on a déjà voté
         loadTitles(currentPollId);
     });
+
+    // ÉCOUTER LA COULEUR D'AMBIANCE EN TEMPS RÉEL
+onValue(ref(db, 'config/room_color'), (snapshot) => {
+    const newColor = snapshot.val() || "#050505";
+    
+    // On change le fond du body
+    document.body.style.backgroundColor = newColor;
+    
+    // Optionnel : Si la couleur est très claire, on met le texte en noir pour qu'il reste lisible
+    const rgb = hexToRgb(newColor);
+    if (rgb && (rgb.r * 0.299 + rgb.g * 0.587 + rgb.b * 0.114) > 186) {
+        document.body.style.color = "#000000";
+    } else {
+        document.body.style.color = "#ffffff";
+    }
+});
+
+// Petite fonction utilitaire pour la lisibilité du texte
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
 
     // 3. LA FONCTION CLÉ : VÉRIFIER SUR FIREBASE
     async function verifierStatutVote() {
