@@ -402,6 +402,11 @@
                     </tr>
                 </table>
             </div>
+            <div id="color-control" style="margin-top: 20px; border-top: 1px solid #444; padding-top: 15px;">
+    <label style="color: var(--neon); font-size: 12px; display: block; margin-bottom: 10px;">AMBIANCE SALLE</label>
+    <input type="color" id="color-picker" value="#050505" oninput="updateRoomColor(this.value)" 
+           style="width: 100%; height: 50px; cursor: pointer; background: none; border: 1px solid var(--neon);">
+            </div>
             <hr style="border:1px solid #444; margin: 15px 0;">
             <button onclick="toggleFullScreen()">🌟 Mode Spectacle (Plein Écran)</button>
             <p style="font-size: 0.8rem; color: #888; margin-top: 10px;">💡 Astuce : Première/dernière touche du piano pour changer de mode, F15 pour changer de titre.</p>
@@ -1992,6 +1997,13 @@ window.resetVotes = function() {
     });
 };
 
+window.updateRoomColor = function(color) {
+    const db = getDatabase();
+    // On enregistre la couleur globale dans Firebase
+    set(ref(db, 'config/room_color'), color);
+};
+
+            
             // 3. GESTION DU CLAVIER (F1)
             window.addEventListener('keydown', (event) => {
                 if (event.key === "F1") {
