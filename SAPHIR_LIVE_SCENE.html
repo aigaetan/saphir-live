@@ -2040,6 +2040,7 @@ window.updateRoomColor = function(color) {
                 if (event.key === "F1") {
                     event.preventDefault();
                     masquerVotesReport();
+                    window.updateRoomColor("#050505");
                     let nextId = currentPollId + 1;
                     if (nextId > 3)
                         nextId = 1;
@@ -2047,10 +2048,12 @@ window.updateRoomColor = function(color) {
                 }
                 if (event.key === "F2") {
                     event.preventDefault();
+                    window.updateRoomColor("#050505");
                     showVotesReport();
                 }
                 if (event.key === "F4") {
                     window.resetVotes();
+                    window.updateRoomColor("#050505");
                 }
             });
 
