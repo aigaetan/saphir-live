@@ -408,17 +408,35 @@
                         </td>
                         <td>
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 5px;">
-                                <input type="checkbox" id="check-votes" onchange="toggleStreamElement('votes-container', this.checked)"> 
+                                <input type="checkbox" id="check-votes" onchange="toggleStreamElement('votes-container', this.checked);toggleStreamElement('votes-container-couleurs', this.checked)"> 
                                 Votes
                             </label>
                         </td>
                     </tr>
                 </table>
             </div>
-            <div id="color-control" style="margin-top: 20px; border-top: 1px solid #444; padding-top: 15px;">
-    <label style="color: var(--neon); font-size: 12px; display: block; margin-bottom: 10px;">AMBIANCE SALLE</label>
+            <div id="color-control" style="margin-top: 20px; border-top: 1px solid #444; padding-top: 15px; font-family: 'Montserrat', sans-serif;">
+                <div id="votes-container-couleurs" style="display:none;">
+    <label style="color: var(--neon); font-size: 11px; display: block; margin-bottom: 10px; letter-spacing: 1px;">AMBIANCE SALLE</label>
+    
     <input type="color" id="color-picker" value="#050505" oninput="updateRoomColor(this.value)" 
-           style="width: 100%; height: 50px; cursor: pointer; background: none; border: 1px solid var(--neon);">
+           style="width: 100%; height: 40px; cursor: pointer; background: none; border: 1px solid var(--neon); margin-bottom: 15px; border-radius: 5px;">
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+        <button onclick="updateRoomColor('#ff007f')" style="background:#ff007f; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer; font-size:10px; font-weight:bold; grid-column: span 2;">ROSE SAPHIR</button>
+        
+        <button onclick="updateRoomColor('#00e5ff')" style="background:#00e5ff; color:black; border:none; padding:8px; border-radius:4px; cursor:pointer; font-size:9px;">CYAN</button>
+        <button onclick="updateRoomColor('#8a2be2')" style="background:#8a2be2; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer; font-size:9px;">VIOLET</button>
+        
+        <button onclick="updateRoomColor('#ffbf00')" style="background:#ffbf00; color:black; border:none; padding:8px; border-radius:4px; cursor:pointer; font-size:9px;">AMBRE</button>
+        <button onclick="updateRoomColor('#990000')" style="background:#990000; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer; font-size:9px;">ROUGE</button>
+        
+        <button onclick="updateRoomColor('#00ff88')" style="background:#00ff88; color:black; border:none; padding:8px; border-radius:4px; cursor:pointer; font-size:9px;">ÉMERAUDE</button>
+        <button onclick="updateRoomColor('#f0f8ff')" style="background:#f0f8ff; color:black; border:none; padding:8px; border-radius:4px; cursor:pointer; font-size:9px;">LUNE</button>
+        
+        <button onclick="updateRoomColor('#050505')" style="background:#000; color:#444; border:1px solid #444; padding:8px; border-radius:4px; cursor:pointer; font-size:10px; grid-column: span 2; margin-top:5px;">NOIR (OFF)</button>
+    </div>
+</div>
             </div>
             <hr style="border:1px solid #444; margin: 15px 0;">
             <button onclick="toggleFullScreen()">🌟 Mode Spectacle (Plein Écran)</button>
