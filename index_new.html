@@ -3,42 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAPHIR LIVE | Pianiste Classique</title>
+    <title>SAPHIR LIVE | Expérience Piano Dynamique</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     
     <style>
         :root {
             --bg-black: #000000;
-            --saphir-blue: #0044ff; /* Bleu Saphir profond */
+            --saphir-blue: #0044ff; 
             --saphir-bright: #00d4ff;
             --text-main: #ffffff;
             --grid-border: rgba(255, 255, 255, 0.1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
+        html { scroll-behavior: smooth; overflow-x: hidden; }
         
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-black);
             color: var(--text-main);
             line-height: 1.4;
-            overflow-x: hidden;
         }
 
-        h1, h2, .nav-logo { 
-            font-family: 'Syncopate', sans-serif; 
-            text-transform: uppercase; 
-            font-weight: 700;
-        }
-
-        /* --- STRUCTURE GRID (Style MusicFlex) --- */
-        .grid-container {
-            display: grid;
-            grid-template-columns: 80px 1fr;
-            min-height: 100vh;
-        }
+        h1, h2, .nav-logo { font-family: 'Syncopate', sans-serif; text-transform: uppercase; font-weight: 700; }
 
         /* --- SIDEBAR NAV --- */
         nav {
@@ -58,86 +49,108 @@
         .nav-links { list-style: none; writing-mode: vertical-rl; transform: rotate(180deg); }
         .nav-links li { margin: 20px 0; }
         .nav-links a { text-decoration: none; color: var(--text-main); font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; transition: 0.3s; }
-        .nav-links a:hover { color: var(--saphir-blue); }
+        .nav-links a:hover { color: var(--saphir-blue); text-shadow: 0 0 10px var(--saphir-blue); }
 
         /* --- MAIN CONTENT --- */
         main { margin-left: 80px; width: calc(100% - 80px); }
 
         section {
-            padding: 100px 5%;
+            padding: 120px 8%;
             border-bottom: 1px solid var(--grid-border);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .section-header { margin-bottom: 60px; }
-        .section-num { color: var(--saphir-blue); font-family: 'Syncopate'; font-size: 1rem; display: block; margin-bottom: 10px; }
-        .section-title { font-size: clamp(2rem, 8vw, 6rem); line-height: 0.9; letter-spacing: -2px; }
+        .section-num { color: var(--saphir-blue); font-family: 'Syncopate'; font-size: 1rem; display: block; margin-bottom: 15px; }
+        .section-title { font-size: clamp(2.5rem, 10vw, 7rem); line-height: 0.85; letter-spacing: -4px; }
 
-        /* --- HOME --- */
+        /* --- ACCUEIL (Parallax-ish) --- */
         #accueil {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            background: linear-gradient(to top, var(--bg-black), transparent), 
+            background: linear-gradient(to top, var(--bg-black), transparent 60%), 
                         url('https://images.unsplash.com/photo-1520527053876-aa266691c5d4?auto=format&fit=crop&w=1950&q=80');
             background-size: cover;
+            background-attachment: fixed; /* Effet de profondeur au scroll */
             background-position: center;
         }
-        .hero-big-text { font-size: clamp(4rem, 15vw, 12rem); font-family: 'Syncopate'; line-height: 0.8; margin-bottom: 40px; }
+        .hero-big-text { font-size: clamp(4rem, 18vw, 13rem); font-family: 'Syncopate'; line-height: 0.8; }
 
-        /* --- BIO --- */
+        /* --- BIO DYNAMIQUE --- */
         .bio-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            align-items: start;
+            gap: 60px;
         }
-        .bio-text { font-size: 1.2rem; font-weight: 300; color: #ccc; max-width: 600px; }
-        .bio-text strong { color: var(--saphir-blue); }
+        .bio-text { font-size: 1.4rem; font-weight: 300; color: #aaa; }
+        .bio-text strong { color: var(--saphir-blue); font-weight: 900; }
 
-        /* --- VIDEOS & PHOTOS --- */
+        /* --- MEDIA GRID (Staggered Animation) --- */
         .media-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 2px;
-            background: var(--grid-border);
+            gap: 15px;
         }
-        .media-item { background: var(--bg-black); overflow: hidden; position: relative; }
-        .media-item img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); transition: 0.5s; }
-        .media-item:hover img { filter: grayscale(0%); transform: scale(1.05); }
+        .media-item { 
+            background: #111; 
+            overflow: hidden; 
+            border: 1px solid var(--grid-border);
+            transition: border 0.3s;
+        }
+        .media-item:hover { border-color: var(--saphir-blue); }
+        .media-item img { width: 100%; height: 400px; object-fit: cover; filter: grayscale(100%); transition: 0.8s cubic-bezier(0.2, 1, 0.3, 1); }
+        .media-item:hover img { filter: grayscale(0%); transform: scale(1.1); }
         
         .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; }
         .video-wrapper iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:0; }
 
         /* --- CONTACT --- */
-        .contact-flex { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 40px; }
-        .email-link { font-size: clamp(1.5rem, 5vw, 4rem); font-weight: 900; color: var(--text-main); text-decoration: none; border-bottom: 4px solid var(--saphir-blue); transition: 0.3s; }
-        .email-link:hover { color: var(--saphir-blue); }
+        .email-link { 
+            font-size: clamp(1.5rem, 6vw, 5rem); 
+            font-weight: 900; 
+            color: var(--text-main); 
+            text-decoration: none; 
+            display: inline-block;
+            position: relative;
+        }
+        .email-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; width: 0; height: 8px;
+            background: var(--saphir-blue);
+            transition: 0.5s;
+        }
+        .email-link:hover::after { width: 100%; }
 
-        /* --- PIANO BAR (Style MusicFlex) --- */
+        /* --- PIANO BAR FIXE --- */
         .piano-fixed {
             position: fixed;
             bottom: 0; right: 0;
             width: calc(100% - 80px);
-            height: 60px;
+            height: 80px;
             background: #000;
             display: flex;
-            border-top: 1px solid var(--saphir-blue);
-            z-index: 900;
+            border-top: 2px solid var(--saphir-blue);
+            z-index: 2000;
+            transform: translateY(100%); /* Caché au début */
+            animation: slideUp 1s forwards 1s;
         }
-        .piano-key { flex: 1; border-right: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; position: relative; }
+        @keyframes slideUp { to { transform: translateY(0); } }
+
+        .piano-key { flex: 1; border-right: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; background: white; }
         .piano-key:hover { background: var(--saphir-blue); }
-        .piano-key.black { background: #111; height: 60%; flex: 0.6; z-index: 2; margin: 0 -0.3%; }
+        .piano-key.black { background: #000; height: 60%; flex: 0.6; z-index: 2; margin: 0 -0.4%; border: none; }
 
         /* --- RESPONSIVE --- */
         @media (max-width: 900px) {
             nav { width: 100%; height: 60px; flex-direction: row; padding: 0 20px; border-right: none; border-bottom: 1px solid var(--grid-border); }
             .nav-logo { transform: rotate(0); }
-            .nav-links { writing-mode: horizontal-tb; transform: rotate(0); display: none; }
+            .nav-links { display: none; }
             main { margin-left: 0; width: 100%; }
-            .grid-container { display: block; }
             .bio-content, .media-grid { grid-template-columns: 1fr; }
-            .piano-fixed { width: 100%; }
+            .piano-fixed { width: 100%; height: 60px; }
+            .hero-big-text { font-size: 5rem; }
         }
     </style>
 </head>
@@ -152,43 +165,43 @@
             <li><a href="#photos">Photos</a></li>
             <li><a href="#contact">Contact</a></li>
         </ul>
-        <div class="social-mini">
-            <a href="#" style="color:var(--text-main)"><i class="fab fa-instagram"></i></a>
-        </div>
+        <div class="social-mini"><a href="#" style="color:var(--text-main)"><i class="fab fa-instagram"></i></a></div>
     </nav>
 
     <main>
         <section id="accueil">
-            <div class="hero-big-text">SAPHIR<br><span style="color:var(--saphir-blue)">LIVE</span></div>
+            <div class="hero-big-text" data-aos="fade-up" data-aos-duration="1500">
+                SAPHIR<br><span style="color:var(--saphir-blue)">LIVE</span>
+            </div>
         </section>
 
         <section id="bio">
-            <div class="section-header">
+            <div class="section-header" data-aos="fade-right">
                 <span class="section-num">01</span>
                 <h2 class="section-title">Biographie</h2>
             </div>
             <div class="bio-content">
-                <div class="bio-text">
-                    <p>Une approche brute et élégante du piano classique. <strong>Saphir</strong> redéfinit l'expérience du récital en fusionnant virtuosité technique et intensité scénique.</p>
+                <div class="bio-text" data-aos="fade-up" data-aos-delay="200">
+                    <p>Une présence scénique captivante. <strong>Saphir</strong> transforme chaque note en une onde de choc émotionnelle.</p>
                 </div>
-                <div class="bio-text">
-                    <p>Basée sur l'excellence, sa musique voyage entre les époques, du romantisme noir aux envolées contemporaines les plus sombres et bleutées.</p>
+                <div class="bio-text" data-aos="fade-up" data-aos-delay="400">
+                    <p>Entre tradition et modernité, elle explore les nuances infinies du <strong>bleu</strong> et du <strong>noir</strong>, sculptant le son comme une pierre précieuse.</p>
                 </div>
             </div>
         </section>
 
         <section id="videos">
-            <div class="section-header">
+            <div class="section-header" data-aos="fade-right">
                 <span class="section-num">02</span>
                 <h2 class="section-title">Vidéos</h2>
             </div>
             <div class="media-grid">
-                <div class="media-item">
+                <div class="media-item" data-aos="zoom-in-up">
                     <div class="video-wrapper">
                         <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
                     </div>
                 </div>
-                <div class="media-item">
+                <div class="media-item" data-aos="zoom-in-up" data-aos-delay="200">
                     <div class="video-wrapper">
                         <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
                     </div>
@@ -197,54 +210,55 @@
         </section>
 
         <section id="photos">
-            <div class="section-header">
+            <div class="section-header" data-aos="fade-right">
                 <span class="section-num">03</span>
                 <h2 class="section-title">Photos</h2>
             </div>
             <div class="media-grid">
-                <div class="media-item"><img src="https://images.unsplash.com/photo-1520527053876-aa266691c5d4?auto=format&fit=crop&w=800&q=80" alt="Saphir"></div>
-                <div class="media-item"><img src="https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=800&q=80" alt="Saphir"></div>
-                <div class="media-item"><img src="https://images.unsplash.com/photo-1465821185615-934289210b39?auto=format&fit=crop&w=800&q=80" alt="Saphir"></div>
-                <div class="media-item"><img src="https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&w=800&q=80" alt="Saphir"></div>
+                <div class="media-item" data-aos="fade-up"><img src="https://images.unsplash.com/photo-1520527053876-aa266691c5d4?auto=format&fit=crop&w=800&q=80"></div>
+                <div class="media-item" data-aos="fade-up" data-aos-delay="100"><img src="https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=800&q=80"></div>
+                <div class="media-item" data-aos="fade-up" data-aos-delay="200"><img src="https://images.unsplash.com/photo-1465821185615-934289210b39?auto=format&fit=crop&w=800&q=80"></div>
+                <div class="media-item" data-aos="fade-up" data-aos-delay="300"><img src="https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&w=800&q=80"></div>
             </div>
         </section>
 
         <section id="contact">
-            <div class="section-header">
+            <div class="section-header" data-aos="fade-right">
                 <span class="section-num">04</span>
                 <h2 class="section-title">Contact</h2>
             </div>
-            <div class="contact-flex">
+            <div data-aos="fade-up">
                 <a href="mailto:contact@saphir-live.fr" class="email-link">contact@saphir-live.fr</a>
-                <div class="socials">
-                    <p style="text-transform: uppercase; font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 10px;">Follow</p>
-                    <a href="#" style="color:var(--text-main); margin-right: 20px;"><i class="fab fa-youtube fa-2x"></i></a>
-                    <a href="#" style="color:var(--text-main)"><i class="fab fa-instagram fa-2x"></i></a>
-                </div>
+            </div>
+            <div class="socials" style="margin-top: 50px;" data-aos="fade-up" data-aos-delay="300">
+                <a href="#" style="color:var(--saphir-blue); margin-right: 30px;"><i class="fab fa-youtube fa-3x"></i></a>
+                <a href="#" style="color:var(--saphir-blue)"><i class="fab fa-instagram fa-3x"></i></a>
             </div>
         </section>
-
-        <footer style="padding: 40px 5%; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #444;">
-            &copy; 2026 SAPHIR LIVE / Brutalism Piano Design
-        </footer>
     </main>
 
     <div class="piano-fixed">
         <div class="piano-key"></div><div class="piano-key black"></div>
         <div class="piano-key"></div><div class="piano-key black"></div>
-        <div class="piano-key"></div>
+        <div class="piano-key"></div><div class="piano-key"></div>
+        <div class="piano-key black"></div><div class="piano-key"></div>
+        <div class="piano-key black"></div><div class="piano-key"></div>
+        <div class="piano-key black"></div><div class="piano-key"></div>
         <div class="piano-key"></div><div class="piano-key black"></div>
         <div class="piano-key"></div><div class="piano-key black"></div>
-        <div class="piano-key"></div><div class="piano-key black"></div>
-        <div class="piano-key"></div>
-        <div class="piano-key"></div><div class="piano-key black"></div>
-        <div class="piano-key"></div><div class="piano-key black"></div>
-        <div class="piano-key"></div>
-        <div class="piano-key"></div><div class="piano-key black"></div>
-        <div class="piano-key"></div><div class="piano-key black"></div>
-        <div class="piano-key"></div><div class="piano-key black"></div>
-        <div class="piano-key"></div>
+        <div class="piano-key"></div><div class="piano-key"></div>
+        <div class="piano-key black"></div><div class="piano-key"></div>
+        <div class="piano-key black"></div><div class="piano-key"></div>
+        <div class="piano-key black"></div><div class="piano-key"></div>
     </div>
 
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: false, // L'animation se répète si on remonte (plus dynamique)
+            mirror: true
+        });
+    </script>
 </body>
 </html>
