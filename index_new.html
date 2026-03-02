@@ -3,29 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAPHIR LIVE | Pianiste Classique</title>
+    <title>SAPHIR LIVE | Pianiste Professionnelle</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
         :root {
-            --primary-bg: #020c1b; 
-            --saphir-blue: #0072ff; /* Bleu Saphir éclatant */
+            --bg-deep: #020c1b;
+            --saphir-primary: #0072ff; 
             --saphir-light: #00c6ff;
-            --text-light: #ffffff;
-            --text-muted: #a8b2d1;
-            --glass: rgba(255, 255, 255, 0.1);
+            --text-white: #ffffff;
+            --text-gray: #a8b2d1;
+            --transition: all 0.3s ease-in-out;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body {
             font-family: 'Montserrat', sans-serif;
-            background-color: var(--primary-bg);
-            color: var(--text-light);
+            background-color: var(--bg-deep);
+            color: var(--text-white);
             line-height: 1.6;
             overflow-x: hidden;
-            padding-bottom: 150px; /* Espace pour le clavier fixe */
+            padding-bottom: 120px; /* Espace pour le piano */
         }
 
         h1, h2, h3, .nav-logo { font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 2px; }
@@ -33,186 +33,192 @@
         /* --- Navigation --- */
         nav {
             position: fixed;
-            top: 0; width: 100%; padding: 20px 50px;
+            top: 0; width: 100%; padding: 25px 50px;
             display: flex; justify-content: space-between; align-items: center;
-            background: rgba(2, 12, 27, 0.9);
+            background: rgba(2, 12, 27, 0.95);
             z-index: 1000;
-            border-bottom: 2px solid var(--saphir-blue);
+            border-bottom: 1px solid var(--saphir-primary);
         }
-        .nav-logo { font-size: 1.5rem; color: var(--saphir-blue); text-decoration: none; font-weight: bold; }
+        .nav-logo { font-size: 1.4rem; color: var(--saphir-primary); text-decoration: none; font-weight: bold; }
         .nav-links { display: flex; list-style: none; }
         .nav-links li { margin-left: 30px; }
-        .nav-links a { text-decoration: none; color: var(--text-light); font-size: 0.8rem; text-transform: uppercase; transition: 0.3s; }
-        .nav-links a:hover { color: var(--saphir-blue); text-shadow: 0 0 10px var(--saphir-blue); }
+        .nav-links a { text-decoration: none; color: var(--text-white); font-size: 0.85rem; transition: var(--transition); }
+        .nav-links a:hover { color: var(--saphir-primary); }
 
-        /* --- Hero --- */
-        #home {
+        /* --- Accueil --- */
+        #accueil {
             height: 100vh;
-            background: linear-gradient(rgba(2, 12, 27, 0.6), rgba(2, 12, 27, 0.9)), 
-                        url('https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&w=1950&q=80');
+            background: linear-gradient(rgba(2, 12, 27, 0.5), rgba(2, 12, 27, 0.9)), 
+                        url('https://images.unsplash.com/photo-1520527053876-aa266691c5d4?auto=format&fit=crop&w=1950&q=80');
             background-size: cover; background-position: center;
             display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
         }
-        .hero-title { font-size: 5rem; color: var(--text-light); filter: drop-shadow(0 0 15px var(--saphir-blue)); }
-        .hero-subtitle { font-size: 1.2rem; color: var(--saphir-light); letter-spacing: 8px; margin-bottom: 30px; }
+        .hero-title { font-size: clamp(3rem, 10vw, 5rem); margin-bottom: 10px; }
+        .hero-subtitle { font-size: 1.1rem; color: var(--saphir-light); letter-spacing: 5px; }
 
-        .btn {
-            padding: 12px 35px;
-            border: 2px solid var(--saphir-blue);
-            color: var(--text-light);
+        /* --- Sections Communes --- */
+        section { padding: 100px 10% 80px; }
+        .section-title { font-size: 2.2rem; margin-bottom: 50px; text-align: center; }
+        .section-title span { color: var(--saphir-primary); }
+
+        .btn-saphir {
+            padding: 12px 30px;
+            border: 2px solid var(--saphir-primary);
+            color: var(--text-white);
             text-decoration: none;
             text-transform: uppercase;
             font-size: 0.8rem;
-            transition: 0.4s;
+            transition: var(--transition);
             background: transparent;
-            box-shadow: 0 0 10px rgba(0, 114, 255, 0.3);
+            display: inline-block;
+            margin-top: 20px;
         }
-        .btn:hover { background: var(--saphir-blue); box-shadow: 0 0 20px var(--saphir-blue); }
+        .btn-saphir:hover { background: var(--saphir-primary); box-shadow: 0 0 15px var(--saphir-primary); }
 
-        /* --- Sections --- */
-        section { padding: 100px 10%; }
-        .section-title { font-size: 2.5rem; text-align: center; margin-bottom: 60px; }
-        .section-title span { color: var(--saphir-blue); }
+        /* --- Bio --- */
+        .bio-flex { display: flex; gap: 50px; align-items: center; flex-wrap: wrap; }
+        .bio-img { flex: 1; min-width: 300px; border: 1px solid var(--saphir-primary); padding: 10px; }
+        .bio-img img { width: 100%; filter: grayscale(20%); }
+        .bio-text { flex: 1.5; min-width: 300px; }
 
-        /* --- Gallery & Video --- */
-        .grid-media { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .media-card { position: relative; overflow: hidden; border: 1px solid var(--saphir-blue); height: 250px; }
-        .media-card img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-        .media-card:hover img { transform: scale(1.1); filter: brightness(70%) blue(10px); }
+        /* --- Vidéos --- */
+        #videos { background: #010812; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; }
+        .video-item { position: relative; padding-bottom: 56.25%; height: 0; border: 1px solid #1a2a44; }
+        .video-item iframe { position: absolute; top:0; left:0; width:100%; height:100%; }
 
-        .video-box { grid-column: span 2; position: relative; padding-bottom: 56.25%; height: 0; border: 2px solid var(--saphir-blue); }
-        .video-box iframe { position: absolute; top:0; left:0; width:100%; height:100%; }
+        /* --- Photos --- */
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+        .photo-item { height: 300px; overflow: hidden; border: 1px solid #1a2a44; cursor: pointer; }
+        .photo-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+        .photo-item:hover img { transform: scale(1.1); filter: brightness(1.2); }
 
-        /* --- CLAVIER INTERACTIF (Fixé en bas) --- */
-        .piano-container {
+        /* --- Contact --- */
+        #contact { text-align: center; }
+        .contact-info { margin-bottom: 40px; font-size: 1.2rem; }
+        .socials a { color: var(--saphir-primary); font-size: 2.5rem; margin: 0 20px; transition: var(--transition); }
+        .socials a:hover { transform: translateY(-10px); color: var(--text-white); }
+
+        /* --- LE CLAVIER FIXE --- */
+        .piano-wrapper {
             position: fixed;
             bottom: 0; left: 0; width: 100%;
-            height: 120px;
+            height: 100px;
             background: #000;
-            display: flex;
-            justify-content: center;
+            display: flex; justify-content: center;
             z-index: 2000;
-            padding-top: 5px;
-            border-top: 3px solid var(--saphir-blue);
+            border-top: 4px solid var(--saphir-primary);
         }
-        .piano-key {
-            position: relative;
-            width: 4.5%;
-            height: 100%;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 0 0 5px 5px;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-        .piano-key:active { background: var(--saphir-light); transform: translateY(2px); }
-        .piano-key.black {
-            width: 2.8%;
-            height: 60%;
-            background: #111;
-            margin-left: -1.4%;
-            margin-right: -1.4%;
-            z-index: 2;
-            border: none;
-        }
-        .piano-key.black:active { background: var(--saphir-blue); }
+        .key { position: relative; width: 40px; height: 100%; background: #fff; border: 1px solid #ccc; border-radius: 0 0 4px 4px; cursor: pointer; transition: 0.1s; }
+        .key:active { background: var(--saphir-light); }
+        .key.black { width: 24px; height: 60%; background: #222; margin-left: -12px; margin-right: -12px; z-index: 2; border: none; }
+        .key.black:active { background: var(--saphir-primary); }
 
-        /* --- Footer & Contact --- */
-        #contact { text-align: center; background: #010812; }
-        .social-links a { color: var(--saphir-blue); font-size: 2rem; margin: 0 15px; transition: 0.3s; }
-        .social-links a:hover { color: var(--text-light); transform: scale(1.2); }
-
+        /* --- Mobile --- */
         @media (max-width: 768px) {
-            .hero-title { font-size: 2.5rem; }
+            nav { padding: 15px 20px; }
             .nav-links { display: none; }
-            .video-box { grid-column: span 1; }
-            .piano-key { width: 8%; } /* Plus large sur mobile */
-            .piano-key.black { width: 5%; margin-left: -2.5%; margin-right: -2.5%; }
+            .video-grid { grid-template-columns: 1fr; }
+            .key { width: 30px; }
         }
     </style>
 </head>
 <body>
 
     <nav>
-        <a href="#" class="nav-logo">SAPHIR LIVE</a>
+        <a href="#accueil" class="nav-logo">SAPHIR LIVE</a>
         <ul class="nav-links">
-            <li><a href="#home">Accueil</a></li>
-            <li><a href="#media">Galerie</a></li>
+            <li><a href="#accueil">Accueil</a></li>
+            <li><a href="#bio">Bio</a></li>
+            <li><a href="#videos">Vidéos</a></li>
+            <li><a href="#photos">Photos</a></li>
             <li><a href="#contact">Contact</a></li>
         </ul>
     </nav>
 
-    <section id="home">
+    <section id="accueil">
         <h1 class="hero-title">Saphir Live</h1>
-        <p class="hero-subtitle">PIANISTE VIRTUOSE</p>
-        <a href="#media" class="btn">Explorer l'univers</a>
+        <p class="hero-subtitle">PIANISTE PROFESSIONNELLE</p>
+        <a href="#bio" class="btn-saphir">Entrer dans l'univers</a>
     </section>
 
-    <section id="media">
-        <h2 class="section-title">Vidéos & <span>Photos</span></h2>
-        <div class="grid-media">
-            <div class="video-box">
-                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
+    <section id="bio">
+        <h2 class="section-title">Ma <span>Biographie</span></h2>
+        <div class="bio-flex">
+            <div class="bio-img">
+                <img src="https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&w=800&q=80" alt="Saphir">
             </div>
-            <div class="media-card"><img src="https://images.unsplash.com/photo-1520527053876-aa266691c5d4?auto=format&fit=crop&w=600&q=80" alt="Saphir 1"></div>
-            <div class="media-card"><img src="https://images.unsplash.com/photo-1465821185615-934289210b39?auto=format&fit=crop&w=600&q=80" alt="Saphir 2"></div>
+            <div class="bio-text">
+                <p>Bienvenue dans mon univers musical. Pianiste de formation classique, j'interprète les plus grandes œuvres avec une passion dévouée à l'émotion pure.</p>
+                <p>Découvrez à travers ce site mon parcours, mes interprétations vidéos et mon actualité artistique.</p>
+                <a href="#contact" class="btn-saphir">Me contacter</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="videos">
+        <h2 class="section-title">Mes <span>Vidéos</span></h2>
+        <div class="video-grid">
+            <div class="video-item">
+                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+            </div>
+            <div class="video-item">
+                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+            </div>
+        </div>
+    </section>
+
+    <section id="photos">
+        <h2 class="section-title">Galerie <span>Photos</span></h2>
+        <div class="photo-grid">
+            <div class="photo-item"><img src="https://images.unsplash.com/photo-1520527053876-aa266691c5d4?auto=format&fit=crop&w=600&q=80" alt="Piano"></div>
+            <div class="photo-item"><img src="https://images.unsplash.com/photo-1465821185615-934289210b39?auto=format&fit=crop&w=600&q=80" alt="Concert"></div>
+            <div class="photo-item"><img src="https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=600&q=80" alt="Saphir"></div>
+            <div class="photo-item"><img src="https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&w=600&q=80" alt="Mains"></div>
         </div>
     </section>
 
     <section id="contact">
-        <h2 class="section-title">Contactez <span>Saphir</span></h2>
-        <p>Pour vos événements privés et concerts internationaux.</p><br>
-        <div class="social-links">
+        <h2 class="section-title">Me <span>Contacter</span></h2>
+        <div class="contact-info">
+            <p>Email : <a href="mailto:contact@saphir-live.fr" style="color:var(--saphir-primary); text-decoration:none;">contact@saphir-live.fr</a></p>
+        </div>
+        <div class="socials">
             <a href="#"><i class="fab fa-instagram"></i></a>
             <a href="#"><i class="fab fa-youtube"></i></a>
-            <a href="mailto:contact@saphir-live.fr"><i class="fas fa-envelope"></i></a>
+            <a href="#"><i class="fab fa-facebook"></i></a>
         </div>
-        <br>
-        <a href="mailto:contact@saphir-live.fr" class="btn">Réserver une date</a>
     </section>
 
-    <div class="piano-container">
-        <div class="piano-key" onclick="playNote()"></div>
-        <div class="piano-key black" onclick="playNote()"></div>
-        <div class="piano-key" onclick="playNote()"></div>
-        <div class="piano-key black" onclick="playNote()"></div>
-        <div class="piano-key" onclick="playNote()"></div>
-        <div class="piano-key" onclick="playNote()"></div>
-        <div class="piano-key black" onclick="playNote()"></div>
-        <div class="piano-key" onclick="playNote()"></div>
-        <div class="piano-key black" onclick="playNote()"></div>
-        <div class="piano-key" onclick="playNote()"></div>
-        <div class="piano-key black" onclick="playNote()"></div>
-        <div class="piano-key" onclick="playNote()"></div>
-        <div class="piano-key" onclick="playNote()"></div>
-        <div class="piano-key black" onclick="playNote()"></div>
-        <div class="piano-key" onclick="playNote()"></div>
-        <div class="piano-key black" onclick="playNote()"></div>
-        <div class="piano-key" onclick="playNote()"></div>
-        <div class="piano-key" onclick="playNote()"></div>
-        <div class="piano-key black" onclick="playNote()"></div>
-        <div class="piano-key" onclick="playNote()"></div>
-        <div class="piano-key black" onclick="playNote()"></div>
-        <div class="piano-key" onclick="playNote()"></div>
+    <div class="piano-wrapper">
+        <div class="key"></div><div class="key black"></div>
+        <div class="key"></div><div class="key black"></div>
+        <div class="key"></div>
+        <div class="key"></div><div class="key black"></div>
+        <div class="key"></div><div class="key black"></div>
+        <div class="key"></div><div class="key black"></div>
+        <div class="key"></div>
+        <div class="key"></div><div class="key black"></div>
+        <div class="key"></div><div class="key black"></div>
+        <div class="key"></div>
+        <div class="key"></div><div class="key black"></div>
+        <div class="key"></div><div class="key black"></div>
+        <div class="key"></div><div class="key black"></div>
+        <div class="key"></div>
     </div>
 
     <script>
-        function playNote() {
-            // Ici, vous pourriez ajouter un fichier son .mp3 pour chaque touche
-            console.log("Note jouée !");
-        }
-
-        // Animation de la nav au scroll
-        window.addEventListener('scroll', function() {
+        // Effet de scroll sur la navigation
+        window.onscroll = function() {
             const nav = document.querySelector('nav');
-            if (window.scrollY > 100) {
-                nav.style.background = '#020c1b';
-                nav.style.boxShadow = '0 5px 20px rgba(0, 114, 255, 0.4)';
+            if (window.pageYOffset > 50) {
+                nav.style.padding = "15px 50px";
+                nav.style.boxShadow = "0 4px 20px rgba(0, 114, 255, 0.2)";
             } else {
-                nav.style.background = 'rgba(2, 12, 27, 0.9)';
-                nav.style.boxShadow = 'none';
+                nav.style.padding = "25px 50px";
+                nav.style.boxShadow = "none";
             }
-        });
+        };
     </script>
 </body>
 </html>
