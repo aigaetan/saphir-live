@@ -14,13 +14,12 @@
         :root {
             --bg-black: #000000;
             --saphir-blue: #0044ff; 
-            --saphir-bright: #00d4ff;
             --text-main: #ffffff;
             --grid-border: rgba(255, 255, 255, 0.1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; overflow-x: hidden; }
+        html { scroll-behavior: smooth; overflow-x: hidden; background: #000; }
         
         body {
             font-family: 'Inter', sans-serif;
@@ -29,9 +28,7 @@
             line-height: 1.4;
         }
 
-        h1, h2, .nav-logo { font-family: 'Syncopate', sans-serif; text-transform: uppercase; font-weight: 700; }
-
-        /* --- SIDEBAR NAV --- */
+        /* NAVIGATION LATERALE */
         nav {
             position: fixed;
             left: 0; top: 0; height: 100vh;
@@ -45,112 +42,81 @@
             background: var(--bg-black);
             z-index: 1000;
         }
-        .nav-logo { transform: rotate(-90deg); color: var(--saphir-blue); font-size: 1.2rem; white-space: nowrap; }
-        .nav-links { list-style: none; writing-mode: vertical-rl; transform: rotate(180deg); }
-        .nav-links li { margin: 20px 0; }
-        .nav-links a { text-decoration: none; color: var(--text-main); font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; transition: 0.3s; }
-        .nav-links a:hover { color: var(--saphir-blue); text-shadow: 0 0 10px var(--saphir-blue); }
+        .nav-logo { transform: rotate(-90deg); color: var(--saphir-blue); font-family: 'Syncopate'; font-size: 1.2rem; white-space: nowrap; text-decoration: none;}
 
-        /* --- MAIN CONTENT --- */
-        main { margin-left: 80px; width: calc(100% - 80px); }
+        main { margin-left: 80px; }
 
         section {
-            padding: 120px 8%;
-            border-bottom: 1px solid var(--grid-border);
+            padding: 150px 10%;
             min-height: 100vh;
+            border-bottom: 1px solid var(--grid-border);
             display: flex;
             flex-direction: column;
             justify-content: center;
+            opacity: 0; /* Caché par défaut pour l'animation */
+            transform: translateY(30px);
+            transition: all 1s ease-out;
         }
 
-        .section-header { margin-bottom: 60px; }
-        .section-num { color: var(--saphir-blue); font-family: 'Syncopate'; font-size: 1rem; display: block; margin-bottom: 15px; }
-        .section-title { font-size: clamp(2.5rem, 10vw, 7rem); line-height: 0.85; letter-spacing: -4px; }
-
-        /* --- ACCUEIL (Parallax-ish) --- */
-        #accueil {
-            background: linear-gradient(to top, var(--bg-black), transparent 60%), 
-                        url('https://images.unsplash.com/photo-1520527053876-aa266691c5d4?auto=format&fit=crop&w=1950&q=80');
-            background-size: cover;
-            background-attachment: fixed; /* Effet de profondeur au scroll */
-            background-position: center;
+        /* Classe active quand on scroll (JS) */
+        section.reveal {
+            opacity: 1;
+            transform: translateY(0);
         }
-        .hero-big-text { font-size: clamp(4rem, 18vw, 13rem); font-family: 'Syncopate'; line-height: 0.8; }
 
-        /* --- BIO DYNAMIQUE --- */
-        .bio-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
+        .hero-big-text { 
+            font-size: clamp(3rem, 15vw, 10rem); 
+            font-family: 'Syncopate'; 
+            line-height: 0.8;
+            text-shadow: 0 0 30px rgba(0, 68, 255, 0.3);
         }
-        .bio-text { font-size: 1.4rem; font-weight: 300; color: #aaa; }
-        .bio-text strong { color: var(--saphir-blue); font-weight: 900; }
 
-        /* --- MEDIA GRID (Staggered Animation) --- */
+        .section-title { 
+            font-size: clamp(2rem, 8vw, 6rem); 
+            font-family: 'Syncopate';
+            margin-bottom: 40px;
+            color: var(--saphir-blue);
+        }
+
+        /* GRILLE MEDIA DYNAMIQUE */
         .media-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            gap: 20px;
         }
-        .media-item { 
-            background: #111; 
-            overflow: hidden; 
+        .media-item {
+            overflow: hidden;
             border: 1px solid var(--grid-border);
-            transition: border 0.3s;
-        }
-        .media-item:hover { border-color: var(--saphir-blue); }
-        .media-item img { width: 100%; height: 400px; object-fit: cover; filter: grayscale(100%); transition: 0.8s cubic-bezier(0.2, 1, 0.3, 1); }
-        .media-item:hover img { filter: grayscale(0%); transform: scale(1.1); }
-        
-        .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; }
-        .video-wrapper iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:0; }
-
-        /* --- CONTACT --- */
-        .email-link { 
-            font-size: clamp(1.5rem, 6vw, 5rem); 
-            font-weight: 900; 
-            color: var(--text-main); 
-            text-decoration: none; 
-            display: inline-block;
-            position: relative;
-        }
-        .email-link::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0; width: 0; height: 8px;
-            background: var(--saphir-blue);
+            background: #050505;
             transition: 0.5s;
         }
-        .email-link:hover::after { width: 100%; }
+        .media-item:hover { border-color: var(--saphir-blue); transform: scale(1.02); }
+        .media-item img { 
+            width: 100%; height: 400px; object-fit: cover; 
+            filter: grayscale(1); transition: 1s;
+        }
+        .media-item:hover img { filter: grayscale(0); }
 
-        /* --- PIANO BAR FIXE --- */
+        /* PIANO FIXE */
         .piano-fixed {
             position: fixed;
             bottom: 0; right: 0;
             width: calc(100% - 80px);
-            height: 80px;
-            background: #000;
+            height: 70px;
+            background: #fff;
             display: flex;
-            border-top: 2px solid var(--saphir-blue);
             z-index: 2000;
-            transform: translateY(100%); /* Caché au début */
-            animation: slideUp 1s forwards 1s;
+            border-top: 5px solid var(--saphir-blue);
         }
-        @keyframes slideUp { to { transform: translateY(0); } }
+        .key { flex: 1; border-right: 1px solid #ddd; cursor: pointer; transition: 0.2s; }
+        .key:hover { background: var(--saphir-blue); }
+        .key.black { background: #000; height: 60%; flex: 0.6; margin: 0 -0.3%; z-index: 2; border: none;}
 
-        .piano-key { flex: 1; border-right: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; background: white; }
-        .piano-key:hover { background: var(--saphir-blue); }
-        .piano-key.black { background: #000; height: 60%; flex: 0.6; z-index: 2; margin: 0 -0.4%; border: none; }
-
-        /* --- RESPONSIVE --- */
-        @media (max-width: 900px) {
-            nav { width: 100%; height: 60px; flex-direction: row; padding: 0 20px; border-right: none; border-bottom: 1px solid var(--grid-border); }
-            .nav-logo { transform: rotate(0); }
-            .nav-links { display: none; }
-            main { margin-left: 0; width: 100%; }
-            .bio-content, .media-grid { grid-template-columns: 1fr; }
-            .piano-fixed { width: 100%; height: 60px; }
-            .hero-big-text { font-size: 5rem; }
+        @media (max-width: 768px) {
+            nav { display: none; }
+            main { margin-left: 0; }
+            .media-grid { grid-template-columns: 1fr; }
+            .piano-fixed { width: 100%; }
         }
     </style>
 </head>
@@ -158,107 +124,74 @@
 
     <nav>
         <a href="#accueil" class="nav-logo">SAPHIR LIVE</a>
-        <ul class="nav-links">
-            <li><a href="#accueil">Accueil</a></li>
-            <li><a href="#bio">Bio</a></li>
-            <li><a href="#videos">Vidéos</a></li>
-            <li><a href="#photos">Photos</a></li>
-            <li><a href="#contact">Contact</a></li>
-        </ul>
-        <div class="social-mini"><a href="#" style="color:var(--text-main)"><i class="fab fa-instagram"></i></a></div>
+        <div style="color:var(--saphir-blue)"><i class="fab fa-instagram fa-2x"></i></div>
     </nav>
 
     <main>
-        <section id="accueil">
-            <div class="hero-big-text" data-aos="fade-up" data-aos-duration="1500">
-                SAPHIR<br><span style="color:var(--saphir-blue)">LIVE</span>
-            </div>
+        <section id="accueil" class="reveal">
+            <h1 class="hero-big-text">SAPHIR<br>LIVE</h1>
+            <p style="letter-spacing: 10px; margin-top: 20px; color: var(--saphir-blue);">PIANISTE CONCERTISTE</p>
         </section>
 
         <section id="bio">
-            <div class="section-header" data-aos="fade-right">
-                <span class="section-num">01</span>
-                <h2 class="section-title">Biographie</h2>
-            </div>
-            <div class="bio-content">
-                <div class="bio-text" data-aos="fade-up" data-aos-delay="200">
-                    <p>Une présence scénique captivante. <strong>Saphir</strong> transforme chaque note en une onde de choc émotionnelle.</p>
-                </div>
-                <div class="bio-text" data-aos="fade-up" data-aos-delay="400">
-                    <p>Entre tradition et modernité, elle explore les nuances infinies du <strong>bleu</strong> et du <strong>noir</strong>, sculptant le son comme une pierre précieuse.</p>
-                </div>
+            <h2 class="section-title">01. BIO</h2>
+            <div style="max-width: 800px; font-size: 1.5rem; font-weight: 200;">
+                <p>Une immersion sonore dans le <strong>noir</strong> et le <strong>bleu</strong>. Saphir Live n'est pas qu'un concert, c'est une performance visuelle et sensitive.</p>
             </div>
         </section>
 
         <section id="videos">
-            <div class="section-header" data-aos="fade-right">
-                <span class="section-num">02</span>
-                <h2 class="section-title">Vidéos</h2>
-            </div>
+            <h2 class="section-title">02. VIDEOS</h2>
             <div class="media-grid">
-                <div class="media-item" data-aos="zoom-in-up">
-                    <div class="video-wrapper">
-                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
-                    </div>
+                <div class="media-item">
+                    <iframe width="100%" height="400" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
                 </div>
-                <div class="media-item" data-aos="zoom-in-up" data-aos-delay="200">
-                    <div class="video-wrapper">
-                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
-                    </div>
+                <div class="media-item">
+                    <iframe width="100%" height="400" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
                 </div>
             </div>
         </section>
 
         <section id="photos">
-            <div class="section-header" data-aos="fade-right">
-                <span class="section-num">03</span>
-                <h2 class="section-title">Photos</h2>
-            </div>
+            <h2 class="section-title">03. PHOTOS</h2>
             <div class="media-grid">
-                <div class="media-item" data-aos="fade-up"><img src="https://images.unsplash.com/photo-1520527053876-aa266691c5d4?auto=format&fit=crop&w=800&q=80"></div>
-                <div class="media-item" data-aos="fade-up" data-aos-delay="100"><img src="https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=800&q=80"></div>
-                <div class="media-item" data-aos="fade-up" data-aos-delay="200"><img src="https://images.unsplash.com/photo-1465821185615-934289210b39?auto=format&fit=crop&w=800&q=80"></div>
-                <div class="media-item" data-aos="fade-up" data-aos-delay="300"><img src="https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&w=800&q=80"></div>
+                <div class="media-item"><img src="https://images.unsplash.com/photo-1520527053876-aa266691c5d4?auto=format&fit=crop&w=800"></div>
+                <div class="media-item"><img src="https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&w=800"></div>
             </div>
         </section>
 
         <section id="contact">
-            <div class="section-header" data-aos="fade-right">
-                <span class="section-num">04</span>
-                <h2 class="section-title">Contact</h2>
-            </div>
-            <div data-aos="fade-up">
-                <a href="mailto:contact@saphir-live.fr" class="email-link">contact@saphir-live.fr</a>
-            </div>
-            <div class="socials" style="margin-top: 50px;" data-aos="fade-up" data-aos-delay="300">
-                <a href="#" style="color:var(--saphir-blue); margin-right: 30px;"><i class="fab fa-youtube fa-3x"></i></a>
-                <a href="#" style="color:var(--saphir-blue)"><i class="fab fa-instagram fa-3x"></i></a>
-            </div>
+            <h2 class="section-title">04. CONTACT</h2>
+            <a href="mailto:contact@saphir-live.fr" style="font-size: 3rem; color: #fff; text-decoration: none; border-bottom: 2px solid var(--saphir-blue);">contact@saphir-live.fr</a>
         </section>
     </main>
 
     <div class="piano-fixed">
-        <div class="piano-key"></div><div class="piano-key black"></div>
-        <div class="piano-key"></div><div class="piano-key black"></div>
-        <div class="piano-key"></div><div class="piano-key"></div>
-        <div class="piano-key black"></div><div class="piano-key"></div>
-        <div class="piano-key black"></div><div class="piano-key"></div>
-        <div class="piano-key black"></div><div class="piano-key"></div>
-        <div class="piano-key"></div><div class="piano-key black"></div>
-        <div class="piano-key"></div><div class="piano-key black"></div>
-        <div class="piano-key"></div><div class="piano-key"></div>
-        <div class="piano-key black"></div><div class="piano-key"></div>
-        <div class="piano-key black"></div><div class="piano-key"></div>
-        <div class="piano-key black"></div><div class="piano-key"></div>
+        <div class="key"></div><div class="key black"></div><div class="key"></div><div class="key black"></div><div class="key"></div><div class="key"></div><div class="key black"></div><div class="key"></div><div class="key black"></div><div class="key"></div><div class="key black"></div><div class="key"></div><div class="key"></div><div class="key black"></div><div class="key"></div><div class="key black"></div><div class="key"></div><div class="key"></div><div class="key black"></div><div class="key"></div><div class="key black"></div><div class="key"></div><div class="key black"></div><div class="key"></div>
     </div>
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        AOS.init({
-            duration: 1000,
-            once: false, // L'animation se répète si on remonte (plus dynamique)
-            mirror: true
-        });
+        // 1. Initialisation AOS
+        AOS.init();
+
+        // 2. Script de secours (Reveal au scroll manuel)
+        function reveal() {
+            var reveals = document.querySelectorAll("section");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 150;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("reveal");
+                }
+            }
+        }
+
+        window.addEventListener("scroll", reveal);
+
+        // Lancer une fois au chargement
+        reveal();
     </script>
 </body>
 </html>
