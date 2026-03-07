@@ -130,7 +130,16 @@
     };
 
     window.joinGame = async () => {
+        // 0. Nettoyage préventif des sessions fantômes
+    await cleanOldGames();
+
     const snap = await get(ref(db, 'poker_v2'));
+    if(!snap.exists()) {
+        alert("Aucune session disponible. Créez-en une !");
+        return;
+    }
+
+    const games = snap.val();
     
     // 1. Vérifier si la base de données contient des parties
     if(!snap.exists()) {
@@ -182,10 +191,51 @@
     setupSession(gameIdCible, slotDisponible);
 };
 
+    // Fonction pour supprimer les vieilles sessions (15 minutes = 900 000 ms)
+async function cleanOldGames() {
+    const snap = await get(ref(db, 'poker_v2'));
+    if (!snap.exists()) return;
+
+    const games = snap.val();
+    const now = Date.now();
+    const expirationTime = 15 * 60 * 1000; // 15 minutes
+
+    for (let id in games) {
+        // Si la session est en lobby et a plus de 15 minutes
+        if (games[id].turn === 'lobby' && (now - games[id].createdAt) > expirationTime) {
+            await set(ref(db, `poker_v2/${id}`), null); // Supprime la session
+            console.log(`Session expirée ${id} supprimée.`);
+        }
+    }
+}
+
     function setupSession(id, slot) {
         currentGameId = id; mySlot = slot;
         document.getElementById('setup').style.display = 'none';
         document.getElementById('game-board').style.display = 'block';
+
+        // --- GESTION DU DÉPART ---
+    window.addEventListener('beforeunload', async () => {
+        const snap = await get(ref(db, `poker_v2/${id}`));
+        if (!snap.exists()) return;
+        const game = snap.val();
+
+        // On libère le slot du joueur
+        let updates = {};
+        updates[`players/${mySlot}/active`] = false;
+        await update(ref(db, `poker_v2/${id}`), updates);
+
+        // Vérifier s'il reste quelqu'un
+        const stillActive = Object.keys(game.players).filter(k => 
+            k !== mySlot && game.players[k].active === true
+        );
+
+        // Si plus personne n'est là, on supprime carrément la session
+        if (stillActive.length === 0) {
+            await set(ref(db, `poker_v2/${id}`), null);
+        }
+    });
+        
         onValue(ref(db, 'poker_v2/' + id), (s) => render(s.val()));
     }
 
