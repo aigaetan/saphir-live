@@ -130,22 +130,57 @@
     };
 
     window.joinGame = async () => {
-        const snap = await get(ref(db, 'poker_v2'));
-        if(!snap.exists()) return alert("Pas de table");
-        const games = snap.val();
-        const id = Object.keys(games)[0];
-        let slot = null;
-        for(let i=1; i<=8; i++) if(!games[id].players['p'+i].active) { slot = 'p'+i; break; }
-        
-        if(slot) {
-            let deck = [...games[id].deck];
-            await update(ref(db, `poker_v2/${id}/players/${slot}`), {
-                active: true, name: "Joueur "+slot[1], chips: 1000, hand: [deck.pop(), deck.pop()], folded: false
-            });
-            await update(ref(db, `poker_v2/${id}`), { deck });
-            setupSession(id, slot);
+    const snap = await get(ref(db, 'poker_v2'));
+    
+    // 1. Vérifier si la base de données contient des parties
+    if(!snap.exists()) {
+        alert("Aucune session n'a été créée. Veuillez créer une table.");
+        return;
+    }
+
+    const games = snap.val();
+    let sessionTrouvee = false;
+    let slotDisponible = null;
+    let gameIdCible = null;
+
+    // 2. Parcourir les sessions pour en trouver une en mode 'lobby' avec de la place
+    for (let id in games) {
+        if (games[id].turn === 'lobby') {
+            // Chercher un slot libre (p1 à p8)
+            for (let i = 1; i <= 8; i++) {
+                if (!games[id].players['p' + i].active) {
+                    slotDisponible = 'p' + i;
+                    gameIdCible = id;
+                    sessionTrouvee = true;
+                    break; 
+                }
+            }
         }
+        if (sessionTrouvee) break;
+    }
+
+    // 3. Afficher le message d'erreur si aucune place n'est libre
+    if (!sessionTrouvee || !slotDisponible) {
+        alert("Désolé Saphir, toutes les sessions sont complètes ou déjà en cours. Aucune place disponible !");
+        return;
+    }
+
+    // 4. Si une place est trouvée, on connecte le joueur
+    let deck = [...games[gameIdCible].deck];
+    let updates = {};
+    
+    updates[`players/${slotDisponible}`] = {
+        active: true,
+        name: "Joueur " + slotDisponible.substring(1), // Ex: Joueur 2
+        chips: 1000,
+        hand: [deck.pop(), deck.pop()],
+        folded: false
     };
+    updates[`deck`] = deck;
+
+    await update(ref(db, `poker_v2/${gameIdCible}`), updates);
+    setupSession(gameIdCible, slotDisponible);
+};
 
     function setupSession(id, slot) {
         currentGameId = id; mySlot = slot;
