@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saphir | Elegant Schedule</title>
+    <title>Saphir | Elegant Events</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,9 +11,10 @@
             --saphir-blue: #0ea5e9;
             --saphir-light: #38bdf8;
             --saphir-gold: #fbbf24;
+            --glass: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.1);
             --text-main: #f8fafc;
-            --hour-height: 60px; /* Hauteur d'une heure en pixels */
+            --text-dim: #94a3b8;
         }
 
         body {
@@ -21,148 +22,225 @@
             background: radial-gradient(circle at top right, #1e293b, #0f172a);
             color: var(--text-main);
             margin: 0;
+            min-height: 100vh;
             padding: 20px;
         }
 
+        /* Container with subtle glow */
         .calendar-container {
-            max-width: 1300px;
-            margin: 20px auto;
+            max-width: 1200px;
+            margin: 40px auto;
             background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--glass-border);
             border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             overflow: hidden;
         }
 
+        /* Header section with Artistic Typography */
         header {
-            padding: 30px;
+            padding: 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--glass-border);
+            background: linear-gradient(to bottom, rgba(255,255,255,0.02), transparent);
         }
 
-        .brand h1 { font-family: 'Playfair Display', serif; font-size: 2rem; margin: 0; color: var(--saphir-light); }
-
-        /* Schedule Layout */
-        .schedule-wrapper {
-            display: flex;
-            position: relative;
-            background: rgba(0,0,0,0.2);
-            overflow-x: auto;
+        .brand h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(to right, #fff, var(--saphir-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
         }
 
-        /* Time column (Gutter) */
-        .time-gutter {
-            width: 60px;
-            flex-shrink: 0;
-            border-right: 1px solid var(--glass-border);
-            background: rgba(15, 23, 42, 0.6);
+        #currentWeekRange {
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: var(--text-dim);
+            margin-top: 5px;
         }
 
-        .time-slot {
-            height: var(--hour-height);
-            font-size: 0.7rem;
-            color: #94a3b8;
-            text-align: center;
-            padding-top: 5px;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
+        /* Button Styling */
+        .nav-btns { display: flex; gap: 12px; align-items: center; }
+
+        button {
+            font-family: 'Inter', sans-serif;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.9rem;
         }
 
-        /* Calendar Grid */
+        button:hover {
+            background: var(--saphir-blue);
+            border-color: var(--saphir-light);
+            transform: translateY(-2px);
+        }
+
+        .add-btn {
+            background: white;
+            color: var(--saphir-deep);
+            font-weight: 600;
+            border: none;
+        }
+
+        .add-btn:hover {
+            background: var(--saphir-gold);
+            color: var(--saphir-deep);
+        }
+
+        /* Grid Design */
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            flex-grow: 1;
-            position: relative;
+            gap: 0;
+            background: var(--glass-border);
         }
 
         .day-column {
-            position: relative;
+            background: rgba(15, 23, 42, 0.4);
+            min-height: 500px;
+            transition: background 0.3s;
             border-right: 1px solid var(--glass-border);
-            height: calc(var(--hour-height) * 24); /* 24 heures */
+        }
+
+        .day-column:hover {
+            background: rgba(255, 255, 255, 0.02);
         }
 
         .day-header {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: #1e293b;
-            padding: 10px;
+            padding: 25px 15px;
             text-align: center;
-            border-bottom: 1px solid var(--glass-border);
         }
 
-        .day-header span { display: block; font-size: 0.65rem; color: var(--saphir-light); text-transform: uppercase; }
+        .day-header span {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--saphir-light);
+            margin-bottom: 8px;
+        }
 
-        /* Event Positioning */
+        .day-header strong {
+            font-size: 1.5rem;
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Event Cards */
         .event {
-            position: absolute;
-            left: 5px;
-            right: 5px;
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            z-index: 2;
-            border: 1px solid rgba(255,255,255,0.1);
+            margin: 8px;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            animation: slideUp 0.4s ease-out;
         }
 
-        .event.concert { background: rgba(14, 165, 233, 0.3); border-left: 3px solid var(--saphir-blue); }
-        .event.singing { background: rgba(251, 191, 36, 0.2); border-left: 3px solid var(--saphir-gold); }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        /* Modal & Buttons (same as before) */
-        button { background: var(--glass-border); color: white; border: 1px solid var(--glass-border); padding: 8px 15px; border-radius: 8px; cursor: pointer; }
-        button:hover { background: var(--saphir-blue); }
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; z-index:100; }
-        .modal-content { background:#1e293b; padding:30px; border-radius:15px; width:350px; }
-        input, select { width:100%; margin: 10px 0; padding:10px; background:#0f172a; border:1px solid #334155; color:white; border-radius:5px; }
+        .event.concert {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(14, 165, 233, 0.05));
+            border-left: 3px solid var(--saphir-blue);
+        }
+
+        .event.singing {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(251, 191, 36, 0.05));
+            border-left: 3px solid var(--saphir-gold);
+        }
+
+        .event-time {
+            display: block;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        /* Modal Redesign */
+        .modal-content {
+            background: #1e293b;
+            border: 1px solid var(--saphir-light);
+            box-shadow: 0 0 40px rgba(14, 165, 233, 0.2);
+            color: white;
+            border-radius: 20px;
+            padding: 40px;
+        }
+
+        input, select {
+            background: rgba(0,0,0,0.2) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: white !important;
+            padding: 12px !important;
+            margin: 15px 0 !important;
+        }
+
+        @media (max-width: 900px) {
+            .calendar-grid { grid-template-columns: 1fr; }
+            .day-column { min-height: auto; border-bottom: 1px solid var(--glass-border); }
+            header { flex-direction: column; text-align: center; }
+        }
     </style>
 </head>
 <body>
 
 <div class="calendar-container">
     <header>
-        <div class="brand"><h1>Saphir</h1><div id="currentWeekRange">Loading...</div></div>
+        <div class="brand">
+            <h1>Saphir</h1>
+            <div id="currentWeekRange">Selected Week</div>
+        </div>
         <div class="nav-btns">
             <button id="prevWeek">Prev</button>
             <button id="today">Today</button>
             <button id="nextWeek">Next</button>
-            <button id="openModal" style="background:var(--saphir-light); color:#000;">+ Add</button>
+            <button class="add-btn" id="openModal">Schedule Event</button>
         </div>
     </header>
 
-    <div class="schedule-wrapper">
-        <div class="time-gutter" id="timeGutter"></div>
-
-        <div class="calendar-grid" id="calendarGrid"></div>
-    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
 </div>
 
 <div id="eventModal" class="modal">
     <div class="modal-content">
-        <h2>Add Event</h2>
+        <h2 style="font-family: 'Playfair Display', serif;">New Event</h2>
         <form id="eventForm">
-            <input type="text" id="title" placeholder="Event Title" required>
-            <input type="date" id="date" required>
-            <input type="time" id="time" required>
+            <input type="text" id="title" placeholder="Event Name" required>
+            <div style="display:flex; gap:10px;">
+                <input type="date" id="date" required style="flex:2">
+                <input type="time" id="time" required style="flex:1">
+            </div>
             <select id="type">
-                <option value="concert">Concert</option>
-                <option value="singing">Singing Session</option>
+                <option value="concert">Concert Performance</option>
+                <option value="singing">Choral / Singing Session</option>
             </select>
             <input type="password" id="password" placeholder="Access Key" required>
-            <button type="submit" style="width:100%; background:var(--saphir-light); color:#000;">Save</button>
-            <button type="button" id="closeModal" style="width:100%; margin-top:10px; background:transparent;">Cancel</button>
+            <button type="submit" class="add-btn" style="width:100%; margin-top:20px;">Confirm Registration</button>
+            <button type="button" id="closeModal" style="width:100%; margin-top:10px; background:transparent;">Dismiss</button>
         </form>
     </div>
 </div>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getFirestore, collection, addDoc, query, where, onSnapshot, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
-            const firebaseConfig = {
+    // --- REPLACE WITH YOUR CONFIG ---
+        const firebaseConfig = {
     apiKey: "AIzaSyDKlg9GOJxXliHqdIWUvGy-XLUh93ceTas",
     authDomain: "planification-b909d.firebaseapp.com",
     projectId: "planification-b909d",
@@ -171,16 +249,9 @@
     appId: "1:548367340058:web:e4531587c33987a3c8b7a3",
     measurementId: "G-6L5XTTSFL4"
   };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
-    const HOUR_HEIGHT = 60; 
-
-    // Generate Time Gutter
-    const gutter = document.getElementById('timeGutter');
-    for(let i=0; i<24; i++) {
-        gutter.innerHTML += `<div class="time-slot">${i}:00</div>`;
-    }
 
     let currentMonday = getMonday(new Date());
 
@@ -196,7 +267,9 @@
         grid.innerHTML = '';
         const endOfWeek = new Date(currentMonday);
         endOfWeek.setDate(endOfWeek.getDate() + 6);
+        
         document.getElementById('currentWeekRange').innerText = `${currentMonday.toLocaleDateString('en-US', {month:'short', day:'numeric'})} - ${endOfWeek.toLocaleDateString('en-US', {month:'short', day:'numeric'})}`;
+        document.getElementById('currentYear').innerText = currentMonday.getFullYear();
 
         for (let i = 0; i < 7; i++) {
             let dayDate = new Date(currentMonday);
@@ -205,58 +278,79 @@
 
             const dayCol = document.createElement('div');
             dayCol.className = 'day-column';
-            dayCol.innerHTML = `<div class="day-header"><span>${dayDate.toLocaleDateString('en-US', { weekday: 'short' })}</span><strong>${dayDate.getDate()}</strong></div>`;
+            dayCol.innerHTML = `
+                <div class="day-header">
+                    <span>${dayDate.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                    <strong>${dayDate.getDate()}</strong>
+                </div>
+                <div class="events-list" id="events-${dateStr}"></div>
+            `;
             grid.appendChild(dayCol);
 
-            // Listen to events
             const q = query(collection(db, "evenements"), where("date", "==", dateStr));
             onSnapshot(q, (snapshot) => {
-                // Clear previous events in this column except header
-                const existingEvents = dayCol.querySelectorAll('.event');
-                existingEvents.forEach(e => e.remove());
-
+                const container = document.getElementById(`events-${dateStr}`);
+                if (!container) return;
+                container.innerHTML = '';
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    const [hours, minutes] = data.heure.split(':').map(Number);
-                    
-                    // Calcul de la position verticale (top)
-                    const topPosition = (hours * HOUR_HEIGHT) + (minutes * (HOUR_HEIGHT/60)) + 60; // +60 for header height offset
-
-                    const evEl = document.createElement('div');
-                    evEl.className = `event ${data.type}`;
-                    evEl.style.top = `${topPosition}px`;
-                    evEl.style.height = `50px`; // Hauteur fixe par défaut
-                    evEl.innerHTML = `<strong>${data.heure}</strong><br>${data.titre}`;
-                    dayCol.appendChild(evEl);
+                    container.innerHTML += `
+                        <div class="event ${data.type}">
+                            <span class="event-time">${data.heure}</span>
+                            <strong>${data.titre}</strong>
+                        </div>`;
                 });
             });
         }
     }
 
-    // Modal & Nav Logic (Similaire au précédent...)
-    document.getElementById('openModal').onclick = () => document.getElementById('eventModal').style.display = 'flex';
-    document.getElementById('closeModal').onclick = () => document.getElementById('eventModal').style.display = 'none';
-    
-    document.getElementById('eventForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const inputPass = document.getElementById('password').value;
-        const configSnap = await getDoc(doc(db, "settings", "auth"));
-        
-        if (configSnap.exists() && inputPass === configSnap.data().adminKey) {
-            await addDoc(collection(db, "evenements"), {
-                titre: document.getElementById('title').value,
-                date: document.getElementById('date').value,
-                heure: document.getElementById('time').value,
-                type: document.getElementById('type').value
-            });
-            document.getElementById('eventModal').style.display = 'none';
-            e.target.reset();
-        } else { alert("Wrong Password"); }
-    };
-
+    // Navigation logic
     document.getElementById('prevWeek').onclick = () => { currentMonday.setDate(currentMonday.getDate() - 7); updateUI(); };
     document.getElementById('nextWeek').onclick = () => { currentMonday.setDate(currentMonday.getDate() + 7); updateUI(); };
     document.getElementById('today').onclick = () => { currentMonday = getMonday(new Date()); updateUI(); };
+
+    // Modal Logic
+    const modal = document.getElementById('eventModal');
+    document.getElementById('openModal').onclick = () => modal.style.display = 'flex';
+    document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
+
+    // Verification & Submission
+    document.getElementById('eventForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const inputPass = document.getElementById('password').value;
+
+        try {
+            // 1. Fetch password from Firebase
+            // Assumption: You have a collection 'settings' and a document 'auth' with field 'adminKey'
+            const configRef = doc(db, "settings", "auth");
+            const configSnap = await getDoc(configRef);
+
+            if (configSnap.exists()) {
+                const correctPass = configSnap.data().adminKey;
+
+                if (inputPass === correctPass) {
+                    // 2. Add the event
+                    const newEvent = {
+                        titre: document.getElementById('title').value,
+                        date: document.getElementById('date').value,
+                        heure: document.getElementById('time').value,
+                        type: document.getElementById('type').value
+                    };
+                    await addDoc(collection(db, "evenements"), newEvent);
+                    modal.style.display = 'none';
+                    e.target.reset();
+                    alert("Event added successfully!");
+                } else {
+                    alert("Incorrect password. Access denied.");
+                }
+            } else {
+                alert("Security error: Password not found in database.");
+            }
+        } catch (err) {
+            console.error("Error:", err);
+            alert("An error occurred while connecting to the database.");
+        }
+    };
 
     updateUI();
 </script>
