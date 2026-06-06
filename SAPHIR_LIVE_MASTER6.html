@@ -82,16 +82,21 @@ header {
 #midi-badge { font-size:10px; padding:3px 10px; border:1px solid var(--border); color:var(--dim); letter-spacing:2px; transition:all 0.3s; }
 #midi-badge.on { color:var(--accent); border-color:var(--accent); box-shadow:0 0 8px rgba(0,212,255,0.3); }
 
+/* Conteneur pour faire scroller les boutons si l'écran est petit et éviter d'écraser le clavier */
+.main-controls-wrapper {
+  display: flex; flex-direction: column; flex-shrink: 0; max-height: 65%; overflow-y: auto;
+}
+
 .preview-area {
-  position: relative; height: 140px; background: #000;
+  position: relative; height: 110px; background: #000;
   overflow: hidden; border-bottom: 1px solid var(--border); flex-shrink: 0;
 }
 .preview-area canvas { width:100%; height:100%; display:block; }
-.preview-label { position:absolute; top:6px; left:14px; font-size:9px; letter-spacing:4px; color:var(--dim); }
+.preview-label { position:absolute; top:6px; left:14px; font-size:9px; letter-spacing:4px; color:var(--dim); z-index: 5; }
 
 .controls {
   display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
-  border-bottom: 1px solid var(--border); flex-shrink: 0;
+  border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg);
 }
 .panel { padding: 10px 14px; border-right: 1px solid var(--border); }
 .panel:last-child { border-right: none; }
@@ -141,19 +146,146 @@ input[type=color]::-webkit-color-swatch { border:none; }
 .toggle-slider::before { content:''; position:absolute; left:3px; top:3px; width:18px; height:18px; background:var(--dim); border-radius:50%; transition:all 0.3s; }
 .big-toggle input:checked + .toggle-slider { background:rgba(0,212,255,0.1); border-color:var(--accent); }
 .big-toggle input:checked + .toggle-slider::before { transform:translateX(28px); background:var(--accent); }
-.toggle-desc">PROJECTEURS
-    <small id="toggleStatus">ACTIFS — DIFFUSION EN COURS</small>
-  </div>
-  <div id="active-notes-bar">AUCUNE NOTE</div>
-</div>
+.toggle-desc { font-size:10px; letter-spacing:2px; }
+.toggle-desc small { display:block; font-size:9px; color:var(--dim); margin-top:1px; }
+#active-notes-bar { margin-left:auto; font-size:10px; color:var(--dim); letter-spacing:2px; max-width:50%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.title-input {
+  background:var(--surface); border:1px solid var(--border); color:var(--text);
+  font-family:'Share Tech Mono',monospace; font-size:10px; padding:4px 8px;
+  letter-spacing:2px; width:100%; margin-top:4px;
+}
 
-<div class="bottom-bar">
-  <label class="big-toggle">
-    <input type="checkbox" id="masterToggleClavier" checked onchange="toggleKeyboardSync(this)">
-    <span class="toggle-slider"></span>
-  </label>
-  <div class="toggle-desc">CLAVIER
-    <small id="toggleStatusClavier">VISIBLE</small>
+/* Zone du clavier réparée pour occuper tout l'espace restant */
+#kb-zone {
+  flex: 1; min-height: 150px; background: #000;
+  border-top: 2px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
+}
+#kb-topbar { display:flex; align-items:center; justify-content:space-between; padding:4px 12px; flex-shrink:0; background: #08080f; }
+#kb-label { font-size:8px; letter-spacing:3px; color:var(--dim); }
+#kb-wrap { flex:1; position:relative; overflow:hidden; width:100%; height:100%; }
+#kb-canvas { width:100%; height:100%; display:block; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">SAPHIR<span>LIVE</span></div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <div id="midi-badge">● MIDI INACTIF</div>
+    <div id="sync-status">● HORS LIGNE</div>
+  </div>
+  <div class="role-badge">MASTER</div>
+</header>
+
+<div class="main-controls-wrapper">
+  <div class="preview-area">
+    <div class="preview-label">APERÇU — MODE BEAMS</div>
+    <canvas id="previewCanvas"></canvas>
+  </div>
+
+  <div class="controls">
+    <div class="panel">
+      <div class="panel-title">// MODE ANIMATION (envoyé au slave)</div>
+      <div class="anim-pills" id="animPills">
+        <button class="anim-pill active" data-anim="beams"     onclick="setAnimMode('beams',this)">⚡ BEAMS</button>
+        <button class="anim-pill" data-anim="titleMode"  onclick="setAnimMode('titleMode',this)">✨ TITRE</button>
+        <button class="anim-pill" data-anim="gravity"    onclick="setAnimMode('gravity',this)">🌌 STARDUST</button>
+        <button class="anim-pill" data-anim="bgMode"     onclick="setAnimMode('bgMode',this)">🎨 FLASHY</button>
+        <button class="anim-pill" data-anim="immersion"  onclick="setAnimMode('immersion',this)">🌈 IMMERSION</button>
+        <button class="anim-pill" data-anim="flowers"    onclick="setAnimMode('flowers',this)">🌸 FLEURS</button>
+        <button class="anim-pill" data-anim="hearts"     onclick="setAnimMode('hearts',this)">❤️ CŒURS</button>
+        <button class="anim-pill" data-anim="lightTrail" onclick="setAnimMode('lightTrail',this)">🖊 TRAIL</button>
+        <button class="anim-pill" data-anim="neonRain"   onclick="setAnimMode('neonRain',this)">🌈 NÉON RAIN</button>
+        <button class="anim-pill" data-anim="aurora"     onclick="setAnimMode('aurora',this)">🌌 AURORA</button>
+        <button class="anim-pill" data-anim="fireworks"  onclick="setAnimMode('fireworks',this)">🎆 FIREWORKS</button>
+        <button class="anim-pill" data-anim="galaxy"     onclick="setAnimMode('galaxy',this)">🚀 GALAXY</button>
+        <button class="anim-pill" data-anim="waves"      onclick="setAnimMode('waves',this)">🌊 WAVES</button>
+        <button class="anim-pill" data-anim="spiral"     onclick="setAnimMode('spiral',this)">🌀 SPIRAL</button>
+        <button class="anim-pill" data-anim="explosion"  onclick="setAnimMode('explosion',this)">💥 EXPLOSION</button>
+        <button class="anim-pill" data-anim="tunnel"     onclick="setAnimMode('tunnel',this)">🕳 TUNNEL</button>
+        <button class="anim-pill" data-anim="plasma"     onclick="setAnimMode('plasma',this)">🎆 PLASMA</button>
+        <button class="anim-pill" data-anim="lightning"  onclick="setAnimMode('lightning',this)">⚡ LIGHTNING</button>
+        <button class="anim-pill" data-anim="ripple"     onclick="setAnimMode('ripple',this)">💧 RIPPLE</button>
+        <button class="anim-pill" data-anim="spectrum"   onclick="setAnimMode('spectrum',this)">📊 SPECTRUM</button>
+        <button class="anim-pill" data-anim="fire"       onclick="setAnimMode('fire',this)">🔥 FIRE</button>
+        <button class="anim-pill" data-anim="staff"      onclick="setAnimMode('staff',this)">🎼 PARTITION</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">// PRESETS BEAMS</div>
+      <div class="presets">
+        <button class="preset-btn active" data-preset="sweep"  onclick="setPreset('sweep',this)">SWEEP</button>
+        <button class="preset-btn" data-preset="pulse"  onclick="setPreset('pulse',this)">PULSE</button>
+        <button class="preset-btn" data-preset="strobe" onclick="setPreset('strobe',this)">STROBE</button>
+        <button class="preset-btn" data-preset="orbit"  onclick="setPreset('orbit',this)">ORBIT</button>
+        <button class="preset-btn" data-preset="fan"    onclick="setPreset('fan',this)">FAN</button>
+        <button class="preset-btn" data-preset="chase"  onclick="setPreset('chase',this)">CHASE</button>
+      </div>
+      <div class="panel-title">// FAISCEAUX</div>
+      <div class="beam-selector">
+        <button class="beam-btn" onclick="setBeams(1,this)">1</button>
+        <button class="beam-btn" onclick="setBeams(2,this)">2</button>
+        <button class="beam-btn" onclick="setBeams(3,this)">3</button>
+        <button class="beam-btn active" onclick="setBeams(4,this)">4</button>
+        <button class="beam-btn" onclick="setBeams(6,this)">6</button>
+        <button class="beam-btn" onclick="setBeams(8,this)">8</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">// DYNAMIQUE</div>
+      <div class="slider-group">
+        <div class="slider-label">VITESSE <span id="speedVal">3</span></div>
+        <input type="range" min="1" max="10" value="3" oninput="updateParam('speed',this.value,'speedVal')">
+      </div>
+      <div class="slider-group">
+        <div class="slider-label">GLOW <span id="glowVal">80</span>%</div>
+        <input type="range" min="10" max="100" value="80" oninput="updateParam('glowIntensity',this.value,'glowVal')">
+      </div>
+      <div class="panel-title" style="margin-top:6px;">// TITRE (mode Titre)</div>
+      <input type="text" id="songTitle" class="title-input" value="SAPHIR LIVE!" oninput="pushTitle()">
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">// COULEURS BEAMS</div>
+      <div class="color-row">
+        <div class="color-label">BEAM 1</div>
+        <input type="color" value="#ffffff" onchange="updateColor('color1',this.value)">
+        <span id="c1hex" style="font-size:9px;color:var(--dim)">#ffffff</span>
+      </div>
+      <div class="color-row">
+        <div class="color-label">BEAM 2</div>
+        <input type="color" value="#00d4ff" onchange="updateColor('color2',this.value)">
+        <span id="c2hex" style="font-size:9px;color:var(--dim)">#00d4ff</span>
+      </div>
+      <div class="color-row">
+        <div class="color-label">BEAM 3</div>
+        <input type="color" value="#ff6b00" onchange="updateColor('color3',this.value)">
+        <span id="c3hex" style="font-size:9px;color:var(--dim)">#ff6b00</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <label class="big-toggle">
+      <input type="checkbox" id="masterToggle" checked onchange="toggleActive(this)">
+      <span class="toggle-slider"></span>
+    </label>
+    <div class="toggle-desc">PROJECTEURS
+      <small id="toggleStatus">ACTIFS — DIFFUSION EN COURS</small>
+    </div>
+    <div id="active-notes-bar">AUCUNE NOTE</div>
+  </div>
+
+  <div class="bottom-bar">
+    <label class="big-toggle">
+      <input type="checkbox" id="masterToggleClavier" checked onchange="toggleKeyboardSync(this)">
+      <span class="toggle-slider"></span>
+    </label>
+    <div class="toggle-desc">CLAVIER
+      <small id="toggleStatusClavier">VISIBLE</small>
+    </div>
   </div>
 </div>
 
@@ -167,6 +299,7 @@ input[type=color]::-webkit-color-swatch { border:none; }
 </div>
 
 <script>
+// STATE
 window.fbState = window.fbState || {
   preset:'sweep', speed:3, color1:'#ffffff', color2:'#00d4ff', color3:'#ff6b00',
   beamCount:4, glowIntensity:80, active:true, animMode:'beams'
@@ -262,10 +395,13 @@ function drawKeyboard() {
 
 function resizeKb() {
   const wrap=document.getElementById('kb-wrap');
-  kbCanvas.width=wrap.clientWidth; kbCanvas.height=wrap.clientHeight;
+  if(wrap && wrap.clientWidth && wrap.clientHeight) {
+    kbCanvas.width=wrap.clientWidth; 
+    kbCanvas.height=wrap.clientHeight;
+  }
 }
 window.addEventListener('resize', resizeKb);
-setTimeout(resizeKb,80);
+setTimeout(resizeKb,150);
 
 function loopKeyboard() {
   drawKeyboard();
@@ -369,7 +505,7 @@ function pBeam(cx,cy,ang,col,len,lw,glow){
   const r=ang*Math.PI/180, ex=cx+Math.cos(r)*len, ey=cy+Math.sin(r)*len;
   const g=pCtx.createLinearGradient(cx,cy,ex,ey);
   g.addColorStop(0,col+'ff'); g.addColorStop(0.5,col+'aa'); g.addColorStop(1,col+'00');
-  pCtx.save(); pCtx.shadowBlur=glow*0.3; pCtx.shadowColor=col;
+  pCtx.save(); pCtx.shadowBlur=glow*0.4; pCtx.shadowColor=col;
   pCtx.strokeStyle=g; pCtx.lineWidth=lw; pCtx.lineCap='round';
   pCtx.beginPath(); pCtx.moveTo(cx,cy); pCtx.lineTo(ex,ey); pCtx.stroke(); pCtx.restore();
 }
@@ -378,7 +514,7 @@ function animPrev(){
   const s=window.fbState||{}, W=pCv.width, H=pCv.height;
   pCtx.clearRect(0,0,W,H); pCtx.fillStyle='#000'; pCtx.fillRect(0,0,W,H);
   if(!s.active) return;
-  pt+=parseFloat(s.speed||3)*0.015;
+  pt+=parseFloat(s.speed||3)*0.02;
   const cols=[s.color1||'#fff',s.color2||'#00d4ff',s.color3||'#ff6b00'];
   const cnt=parseInt(s.beamCount||4), glow=parseInt(s.glowIntensity||80), len=Math.max(W,H)*0.9;
   const pos=[{x:W*.15,y:H},{x:W*.5,y:H},{x:W*.85,y:H},{x:0,y:H*.5},{x:W,y:H*.5}];
@@ -386,7 +522,7 @@ function animPrev(){
     const p=pos[i%pos.length], c=cols[i%3];
     let a=-90+Math.sin(pt+i*0.8)*45;
     const gm=glow/100;
-    pCtx.globalAlpha=0.8; pBeam(p.x,p.y,a,c,len,2+gm*3,glow*gm);
+    pCtx.globalAlpha=0.85; pBeam(p.x,p.y,a,c,len,3+gm*4,glow*gm);
     pCtx.globalAlpha=1;
   }
 }
