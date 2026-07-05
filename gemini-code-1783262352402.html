@@ -460,6 +460,7 @@ function noteFromPos(x,y) {
 
 let mouseDown=false, lastNote=null;
 kbCanvas.addEventListener('mousedown', e=>{
+  e.preventDefault(); // <-- Bloque la sélection bleue du navigateur
   mouseDown=true;
   const r=kbCanvas.getBoundingClientRect();
   const n=noteFromPos(e.clientX-r.left,e.clientY-r.top);
