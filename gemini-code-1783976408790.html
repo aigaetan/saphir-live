@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack Casino P2P - 5 Joueurs & Croupier IA</title>
+    <!-- Import de PeerJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.4.7/peerjs.min.js"></script>
+    <style>
+        :root {
+            --felt: #076324;
+            --felt-dark: #033c14;
+            --gold: #f1c40f;
+            --bg: #111;
+            --panel: #1e272e;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg);
+            color: white;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 { margin: 5px 0; color: var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        
+        /* Configuration de départ */
+        .setup-panel {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+        button {
+            background: #27ae60;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            transition: 0.2s;
+        }
+        button:hover { filter: brightness(1.1); transform: scale(1.02); }
+        button:disabled { background: #7f8c8d; cursor: not-allowed; transform: none; }
+        
+        .link-share {
+            background: #2c3e50;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: monospace;
+            word-break: break-all;
+            border: 1px dashed var(--gold);
+        }
+
+        /* TABLE DE CASINO */
+        .casino-table {
+            background: radial-gradient(circle, var(--felt) 0%, var(--felt-dark) 100%);
+            border: 12px solid #5c3a21; /* Bordure en bois de la table */
+            border-radius: 40px;
+            width: 95%;
+            max-width: 1200px;
+            padding: 20px;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.8), 0 15px 30px rgba(0,0,0,0.6);
+            display: none; /* Révélé après connexion */
+        }
+
+        /* CROUPIER IA (Haut de la table) */
+        .dealer-area {
+            text-align: center;
+            border-bottom: 2px dashed rgba(255,255,255,0.2);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .dealer-card-zone {
+            display: inline-block;
+            background: rgba(0,0,0,0.3);
+            padding: 15px 30px;
+            border-radius: 50px;
+        }
+
+        /* GRILLE DES 5 JOUEURS */
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            justify-content: center;
+        }
+
+        /* STATION DE CHAQUE JOUEUR */
+        .player-station {
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            border: 3px solid #3d3d3d;
+            transition: 0.3s;
+            position: relative;
+        }
+        .player-station.active-turn {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px var(--gold);
+            background: rgba(241, 196, 15, 0.1);
+        }
+        
+        /* Vidéo intégrée au joueur */
+        .video-wrapper {
+            width: 100%;
+            height: 140px;
+            background: black;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .player-name {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0,0,0,0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            max-width: 90%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Affichage des Cartes */
+        .cards {
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            min-height: 30px;
+            margin: 5px 0;
+        }
+        .score {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ccc;
+        }
+        .status-badge {
+            font-size: 12px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 5px;
+            background: #7f8c8d;
+        }
+
+        /* Contrôles de Jeu */
+        .control-panel {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 2px dashed rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>♣️ Casino Blackjack P2P (Max 5 Joueurs) ♠️</h1>
+    <div id="network-status" style="margin-bottom:15px; font-weight:bold;">Initialisation de la caméra...</div>
+
+    <!-- ÉCRAN DE CONFIGURATION INITIALE -->
+    <div class="setup-panel" id="setupPanel">
+        <div id="init-msg">Accès caméra requis pour démarrer...</div>
+        <div id="actions-zone" style="display:none;">
+            <button onclick="beHost()">Créer une Table (Hôte)</button>
+            <p style="margin: 10px 0; color:#999;">— OU —</p>
+            <input type="text" id="hostIdInput" placeholder="ID de la table..." style="padding: 10px; border-radius: 5px; border:none; width:200px;">
+            <button onclick="joinTable(document.getElementById('hostIdInput').value)">Rejoindre</button>
+        </div>
+        <div id="shareZone" style="display:none; margin-top:15px;">
+            <p>Invite tes amis (max 4 invités) avec ce lien :</p>
+            <div class="link-share" id="shareLink">Génération...</div>
+            <button id="btnStartGame" onclick="hostStartRound()" style="margin-top:15px; background:var(--gold); color:black;">Lancer la partie</button>
+        </div>
+    </div>
+
+    <!-- LA TABLE DE JEU -->
+    <div class="casino-table" id="casinoTable">
+        
+        <!-- ZONE DU CROUPIER IA -->
+        <div class="dealer-area">
+            <div class="dealer-card-zone">
+                <h3 style="margin:0 0 5px 0; color:var(--gold);">🤖 Croupier IA</h3>
+                <div class="cards" id="dealerCards">-</div>
+                <div class="score" id="dealerScore">Score : 0</div>
+            </div>
+        </div>
+
+        <!-- LES PLACES DES JOUEURS -->
+        <div class="players-grid" id="playersGrid">
+            <!-- Injectés dynamiquement en JS (Max 5) -->
+        </div>
+
+        <!-- CONTRÔLES DU JOUEUR ACTIF -->
+        <div class="control-panel" id="controlPanel" style="display:none;">
+            <button onclick="playerAction('hit')" style="background:#e74c3c;">Tirer (Hit)</button>
+            <button onclick="playerAction('stand')" style="background:#3498db;">Rester (Stand)</button>
+        </div>
+    </div>
+
+    <script>
+        let localStream;
+        let peer;
+        let myId;
+        let isHost = false;
+        
+        // Stockage des connexions P2P
+        let conns = {}; // {peerId: Connection}
+        let calls = {}; // {peerId: Call}
+        
+        // Liste ordonnée de tous les joueurs connectés à la table (Hôte inclus)
+        let playerList = []; 
+        
+        // État de la partie partagé par l'Hôte
+        let gameState = {
+            deck: [],
+            players: [], // IDs des joueurs présents
+            hands: {},   // {id: [cards]}
+            scores: {},  // {id: Int}
+            playerStatus: {}, // {id: 'playing'|'stand'|'bust'|'won'|'lost'|'push'}
+            dealerHand: [],
+            dealerScore: 0,
+            activePlayerIdx: -1,
+            stage: 'waiting' // waiting, playing, dealer, ended
+        };
+
+        const statusText = document.getElementById('network-status');
+
+        // Étape 1 : Obtenir la caméra obligatoirement
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(stream => {
+                localStream = stream;
+                document.getElementById('init-msg').style.display = 'none';
+                document.getElementById('actions-zone').style.display = 'block';
+                statusText.innerText = "Caméra prête. Crée ou rejoins une table.";
+                initPeerJS();
+            })
+            .catch(err => {
+                console.error(err);
+                statusText.innerText = "Erreur : L'accès webcam/micro est obligatoire pour lancer le jeu.";
+            });
+
+        // Étape 2 : Initialisation du réseau PeerJS
+        function initPeerJS() {
+            peer = new Peer();
+            
+            peer.on('open', (id) => {
+                myId = id;
+                // Détection auto du lien d'invitation
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('table')) {
+                    joinTable(urlParams.get('table'));
+                }
+            });
+
+            // Réception d'un appel vidéo d'un autre joueur (Maillage)
+            peer.on('call', (call) => {
+                call.answer(localStream);
+                calls[call.peer] = call;
+                call.on('stream', (remoteStream) => {
+                    attachVideoToPlayer(call.peer, remoteStream);
+                });
+            });
+
+            // Réception d'une tentative de connexion de données
+            peer.on('connection', (conn) => {
+                handleIncomingDataConnection(conn);
+            });
+        }
+
+        // --- SECTION ACTIONS HÔTE (Le serveur de jeu) ---
+        function beHost() {
+            isHost = true;
+            playerList = [myId];
+            gameState.players = [myId];
+            
+            document.getElementById('actions-zone').style.display = 'none';
+            document.getElementById('shareZone').style.display = 'block';
+            
+            const shareUrl = window.location.origin + window.location.pathname + "?table=" + myId;
+            document.getElementById('shareLink').innerText = shareUrl;
+            statusText.innerText = "Table ouverte. En attente de joueurs...";
+            
+            showCasinoTable();
+            rebuildPlayersUI();
+            attachVideoToPlayer(myId, localStream); // Notre webcam sur notre slot
+        }
+
+        function handleIncomingDataConnection(conn) {
+            if (isHost && playerList.length >= 5) {
+                conn.on('open', () => {
+                    conn.send({ type: 'ERROR', message: "Table complète (maximum 5 joueurs)." });
+                    setTimeout(() => conn.close(), 1000);
+                });
+                return;
+            }
+
+            conns[conn.peer] = conn;
+            setupDataEvents(conn);
+        }
+
+        // --- SECTION ACTIONS CLIENTS (Rejoindre la table) ---
+        function joinTable(hostId) {
+            if (!hostId) return;
+            statusText.innerText = "Recherche de la table...";
+            
+            // Connexion de données vers l'hôte
+            const conn = peer.connect(hostId);
+            conns[hostId] = conn;
+            setupDataEvents(conn);
+        }
+
+        function setupDataEvents(conn) {
+            conn.on('open', () => {
+                statusText.innerText = "Connecté à la table de jeu !";
+                document.getElementById('setupPanel').style.display = 'none';
+                showCasinoTable();
+
+                if (!isHost) {
+                    // Les clients envoient un ping d'introduction
+                    conn.send({ type: 'JOIN', peerId: myId });
+                }
+            });
+
+            conn.on('data', (data) => {
+                if (isHost) {
+                    handleDataAsHost(conn.peer, data);
+                } else {
+                    handleDataAsClient(data);
+                }
+            });
+
+            conn.on('close', () => {
+                handleDisconnect(conn.peer);
+            });
+        }
+
+        // --- MAILLAGE P2P VIDÉO AUTOMATIQUE (Mesh Topology) ---
+        // Cette règle évite que deux joueurs s'appellent en même temps. 
+        // Le joueur avec le plus "grand" ID alphanumérique appelle le plus "petit".
+        function establishMeshConnections(allPlayers) {
+            allPlayers.forEach(id => {
+                if (id !== myId) {
+                    // Si on n'a pas encore de connexion de données active
+                    if (!conns[id] && myId > id) {
+                        const conn = peer.connect(id);
+                        conns[id] = conn;
+                        setupDataEvents(conn);
+                    }
+                    // Si on n'a pas encore de flux vidéo actif
+                    if (!calls[id] && myId > id) {
+                        const call = peer.call(id, localStream);
+                        calls[id] = call;
+                        call.on('stream', (remoteStream) => {
+                            attachVideoToPlayer(id, remoteStream);
+                        });
+                    }
+                }
+            });
+        }
+
+        // --- ALGORITHME DU JEU BLACKJACK (Géré par l'Hôte) ---
+        function createShoe() {
+            // Création d'un sabot de 6 jeux de cartes pour 5 joueurs
+            const suits = ['♠', '♥', '♦', '♣'];
+            const values = [
+                { n: '2', v: 2 }, { n: '3', v: 3 }, { n: '4', v: 4 }, { n: '5', v: 5 },
+                { n: '6', v: 6 }, { n: '7', v: 7 }, { n: '8', v: 8 }, { n: '9', v: 9 },
+                { n: '10', v: 10 }, { n: 'J', v: 10 }, { n: 'Q', v: 10 }, { n: 'K', v: 10 },
+                { n: 'A', v: 11 }
+            ];
+            let shoe = [];
+            for (let k = 0; k < 6; k++) { // 6 paquets
+                for (let s of suits) {
+                    for (let v of values) {
+                        shoe.push({ name: v.n, suit: s, val: v.v });
+                    }
+                }
+            }
+            // Mélange Fisher-Yates
+            for (let i = shoe.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shoe[i], shoe[j]] = [shoe[j], shoe[i]];
+            }
+            return shoe;
+        }
+
+        function calculateScore(hand) {
+            let score = 0;
+            let aces = 0;
+            for (let card of hand) {
+                score += card.val;
+                if (card.name === 'A') aces++;
+            }
+            while (score > 21 && aces > 0) {
+                score -= 10;
+                aces--;
+            }
+            return score;
+        }
+
+        // Lancement du round par l'Hôte
+        function hostStartRound() {
+            if (!isHost) return;
+            
+            gameState.deck = createShoe();
+            gameState.hands = {};
+            gameState.scores = {};
+            gameState.playerStatus = {};
+            
+            // Distribution de 2 cartes à chaque joueur présent
+            gameState.players.forEach(pId => {
+                gameState.hands[pId] = [gameState.deck.pop(), gameState.deck.pop()];
+                gameState.scores[pId] = calculateScore(gameState.hands[pId]);
+                gameState.playerStatus[pId] = 'playing';
+            });
+
+            // Distribution au Croupier IA (1 visible, 1 cachée simulée)
+            gameState.dealerHand = [gameState.deck.pop(), gameState.deck.pop()];
+            gameState.dealerScore = calculateScore(gameState.dealerHand);
+
+            gameState.activePlayerIdx = 0; // Le premier joueur commence
+            gameState.stage = 'playing';
+
+            broadcastGameState();
+        }
+
+        // Gestion des paquets reçus côté HÔTE
+        function handleDataAsHost(senderId, data) {
+            if (data.type === 'JOIN') {
+                if (!playerList.includes(senderId)) {
+                    playerList.push(senderId);
+                    gameState.players = [...playerList];
+                    
+                    // Informer tout le monde du nouveau venu pour activer le maillage vidéo
+                    broadcast({ type: 'MESH_UPDATE', players: playerList });
+                    establishMeshConnections(playerList);
+                    
+                    rebuildPlayersUI();
+                    // Redonner le flux vidéo local à la nouvelle UI
+                    attachVideoToPlayer(myId, localStream);
+                    
+                    // Synchroniser l'état du jeu actuel avec le nouveau
+                    broadcastGameState();
+                }
+            } else if (data.type === 'ACTION') {
+                // Un client exécute "Tirer" ou "Rester"
+                const activePlayerId = gameState.players[gameState.activePlayerIdx];
+                if (senderId !== activePlayerId) return; // Anti-triche
+
+                if (data.action === 'hit') {
+                    gameState.hands[senderId].push(gameState.deck.pop());
+                    gameState.scores[senderId] = calculateScore(gameState.hands[senderId]);
+                    if (gameState.scores[senderId] >= 21) {
+                        gameState.playerStatus[senderId] = gameState.scores[senderId] > 21 ? 'bust' : 'stand';
+                        goToNextPlayer();
+                    }
+                } else if (data.action === 'stand') {
+                    gameState.playerStatus[senderId] = 'stand';
+                    goToNextPlayer();
+                }
+                broadcastGameState();
+            }
+        }
+
+        // Actions locales déclenchées par le joueur actif
+        function playerAction(action) {
+            if (isHost) {
+                const activePlayerId = gameState.players[gameState.activePlayerIdx];
+                if (activePlayerId !== myId) return;
+
+                if (action === 'hit') {
+                    gameState.hands[myId].push(gameState.deck.pop());
+                    gameState.scores[myId] = calculateScore(gameState.hands[myId]);
+                    if (gameState.scores[myId] >= 21) {
+                        gameState.playerStatus[myId] = gameState.scores[myId] > 21 ? 'bust' : 'stand';
+                        goToNextPlayer();
+                    }
+                } else if (action === 'stand') {
+                    gameState.playerStatus[myId] = 'stand';
+                    goToNextPlayer();
+                }
+                broadcastGameState();
+            } else {
+                // Les clients envoient l'action à l'hôte
+                const hostId = playerList[0];
+                if (conns[hostId]) {
+                    conns[hostId].send({ type: 'ACTION', action: action });
+                }
+            }
+        }
+
+        function goToNextPlayer() {
+            gameState.activePlayerIdx++;
+            if (gameState.activePlayerIdx >= gameState.players.length) {
+                // Tous les joueurs ont joué -> C'est au Croupier IA !
+                runDealerAI();
+            }
+        }
+
+        // --- ALGORITHME DU CROUPIER IA ---
+        function runDealerAI() {
+            gameState.stage = 'dealer';
+            
+            // Règle du casino : Le croupier tire à 16, s'arrête à 17
+            while (calculateScore(gameState.dealerHand) < 17) {
+                gameState.dealerHand.push(gameState.deck.pop());
+            }
+            gameState.dealerScore = calculateScore(gameState.dealerHand);
+
+            // Résolution des vainqueurs
+            gameState.players.forEach(pId => {
+                const pScore = gameState.scores[pId];
+                if (pScore > 21) {
+                    gameState.playerStatus[pId] = 'lost'; // Bust
+                } else if (gameState.dealerScore > 21) {
+                    gameState.playerStatus[pId] = 'won';  // Le croupier saute, tout le monde gagne
+                } else if (pScore > gameState.dealerScore) {
+                    gameState.playerStatus[pId] = 'won';
+                } else if (pScore < gameState.dealerScore) {
+                    gameState.playerStatus[pId] = 'lost';
+                } else {
+                    gameState.playerStatus[pId] = 'push'; // Égalité
+                }
+            });
+
+            gameState.stage = 'ended';
+        }
+
+        // --- COMMUNICATIONS ET SYNCHRO ---
+        function broadcastGameState() {
+            if (!isHost) return;
+            broadcast({ type: 'GAME_STATE', state: gameState });
+            updateGameUI();
+        }
+
+        function handleDataAsClient(data) {
+            if (data.type === 'MESH_UPDATE') {
+                playerList = data.players;
+                rebuildPlayersUI();
+                attachVideoToPlayer(myId, localStream);
+                establishMeshConnections(playerList);
+            } else if (data.type === 'GAME_STATE') {
+                gameState = data.state;
+                updateGameUI();
+            } else if (data.type === 'ERROR') {
+                alert(data.message);
+                window.location.reload();
+            }
+        }
+
+        // Fonction utilitaire d'envoi à tous les connectés
+        function broadcast(msg) {
+            Object.values(conns).forEach(conn => {
+                if (conn.open) conn.send(msg);
+            });
+        }
+
+        // --- INTERFACE VISUELLE DYNAMIQUE ---
+        function showCasinoTable() {
+            document.getElementById('setupPanel').style.display = 'none';
+            document.getElementById('casinoTable').style.display = 'block';
+        }
+
+        // Reconstruction de la grille HTML selon les joueurs présents (Max 5)
+        function rebuildPlayersUI() {
+            const grid = document.getElementById('playersGrid');
+            grid.innerHTML = '';
+
+            playerList.forEach((id, index) => {
+                const station = document.createElement('div');
+                station.className = 'player-station';
+                station.id = `station-${id}`;
+                station.innerHTML = `
+                    <div class="video-wrapper">
+                        <video id="video-${id}" autoplay playsinline></video>
+                        <span class="player-name">${id === myId ? 'Toi (Joueur ' + (index+1) + ')' : 'Joueur ' + (index+1)}</span>
+                    </div>
+                    <div class="cards" id="cards-${id}">-</div>
+                    <div class="score" id="score-${id}">Score : 0</div>
+                    <div class="status-badge" id="status-${id}" style="display:none;">En attente</div>
+                `;
+                grid.appendChild(station);
+            });
+        }
+
+        function attachVideoToPlayer(id, stream) {
+            setTimeout(() => {
+                const videoEl = document.getElementById(`video-${id}`);
+                if (videoEl) {
+                    videoEl.srcObject = stream;
+                    if (id === myId) videoEl.muted = true; // Éviter l'auto-Larsen audio
+                }
+            }, 300);
+        }
+
+        // Mise à jour de l'affichage complet du jeu
+        function updateGameUI() {
+            // 1. Mise à jour du Croupier
+            const dCardsEl = document.getElementById('dealerCards');
+            const dScoreEl = document.getElementById('dealerScore');
+            
+            if (gameState.stage === 'playing') {
+                // Cache la deuxième carte du croupier au début du tour
+                dCardsEl.innerHTML = renderCardSymbol(gameState.dealerHand[0]) + " [🂠]";
+                dScoreEl.innerText = "Score : ?";
+            } else {
+                // Révèle tout dès que c'est son tour
+                dCardsEl.innerHTML = gameState.dealerHand.map(c => renderCardSymbol(c)).join(' ');
+                dScoreEl.innerText = "Score : " + gameState.dealerScore;
+            }
+
+            // 2. Mise à jour de chaque joueur
+            gameState.players.forEach(pId => {
+                const hand = gameState.hands[pId] || [];
+                const score = gameState.scores[pId] || 0;
+                const status = gameState.playerStatus[pId];
+
+                const cardsEl = document.getElementById(`cards-${pId}`);
+                const scoreEl = document.getElementById(`score-${pId}`);
+                const statusEl = document.getElementById(`status-${pId}`);
+                const stationEl = document.getElementById(`station-${pId}`);
+
+                if (cardsEl) cardsEl.innerHTML = hand.map(c => renderCardSymbol(c)).join(' ');
+                if (scoreEl) scoreEl.innerText = "Score : " + score;
+
+                // Statuts graphiques
+                if (statusEl) {
+                    statusEl.style.display = 'inline-block';
+                    if (status === 'playing') {
+                        statusEl.innerText = "En jeu";
+                        statusEl.style.backgroundColor = "#3498db";
+                    } else if (status === 'stand') {
+                        statusEl.innerText = "Reste";
+                        statusEl.style.backgroundColor = "#f39c12";
+                    } else if (status === 'bust') {
+                        statusEl.innerText = "Sauté (Bust)";
+                        statusEl.style.backgroundColor = "#c0392b";
+                    } else if (status === 'won') {
+                        statusEl.innerText = "Gagné !";
+                        statusEl.style.backgroundColor = "#2ecc71";
+                    } else if (status === 'lost') {
+                        statusEl.innerText = "Perdu";
+                        statusEl.style.backgroundColor = "#95a5a6";
+                    } else if (status === 'push') {
+                        statusEl.innerText = "Égalité";
+                        statusEl.style.backgroundColor = "#d35400";
+                    }
+                }
+
+                // Surbrillance du tour actif
+                if (stationEl) {
+                    const isHisTurn = gameState.stage === 'playing' && gameState.players[gameState.activePlayerIdx] === pId;
+                    if (isHisTurn) {
+                        stationEl.classList.add('active-turn');
+                    } else {
+                        stationEl.classList.remove('active-turn');
+                    }
+                }
+            });
+
+            // 3. Gestion des boutons d'actions locaux
+            const controlPanel = document.getElementById('controlPanel');
+            const activePlayerId = gameState.players[gameState.activePlayerIdx];
+            
+            if (gameState.stage === 'playing' && activePlayerId === myId) {
+                controlPanel.style.display = 'block';
+            } else {
+                controlPanel.style.display = 'none';
+            }
+
+            // Bouton Rejouer sur l'Hôte si la partie est terminée
+            const btnStart = document.getElementById('btnStartGame');
+            if (isHost) {
+                if (gameState.stage === 'ended' || gameState.stage === 'waiting') {
+                    btnStart.style.display = 'inline-block';
+                    btnStart.innerText = "Lancer un nouveau Round";
+                    statusText.innerText = "Round terminé !";
+                } else {
+                    btnStart.style.display = 'none';
+                    statusText.innerText = "Partie en cours...";
+                }
+            }
+        }
+
+        function renderCardSymbol(card) {
+            if (!card) return "";
+            const isRed = card.suit === '♥' || card.suit === '♦';
+            return `<span style="color: ${isRed ? '#e74c3c' : '#fff'}">${card.name}${card.suit}</span>`;
+        }
+
+        // Gestion propre de la déconnexion d'un joueur
+        function handleDisconnect(disconnectedId) {
+            playerList = playerList.filter(id => id !== disconnectedId);
+            delete conns[disconnectedId];
+            delete calls[disconnectedId];
+
+            if (isHost) {
+                gameState.players = gameState.players.filter(id => id !== disconnectedId);
+                // Si c'était au joueur déconnecté de jouer, on passe au suivant
+                if (gameState.stage === 'playing' && gameState.players[gameState.activePlayerIdx] === undefined) {
+                    goToNextPlayer();
+                }
+                broadcast({ type: 'MESH_UPDATE', players: playerList });
+                broadcastGameState();
+            }
+
+            rebuildPlayersUI();
+            attachVideoToPlayer(myId, localStream);
+            statusText.innerText = "Un joueur s'est déconnecté.";
+        }
+    </script>
+</body>
+</html>
